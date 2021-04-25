@@ -108,6 +108,10 @@ func LocationGetStage(data *[]byte, locationsOffset uint, i uint) []byte {
 	return (*data)[(locationsOffset+(i-1)*LOCATION_SIZE)+11 : (locationsOffset+(i-1)*LOCATION_SIZE)+16]
 }
 
+func LocationSetStage(data *[]byte, locationsOffset uint, i uint, stage []byte) {
+	copy((*data)[(locationsOffset+(i-1)*LOCATION_SIZE)+11:(locationsOffset+(i-1)*LOCATION_SIZE)+16], stage[0:5])
+}
+
 func LocationGetFieldID(data *[]byte, locationsOffset uint, i uint) byte {
 	return (*data)[(locationsOffset+(i-1)*LOCATION_SIZE)+16]
 }
@@ -190,6 +194,13 @@ func LocationGetWater(data *[]byte, locationsOffset uint, i uint) byte {
 
 func LocationSetWater(data *[]byte, locationsOffset uint, i uint, value byte) {
 	(*data)[(locationsOffset+(i-1)*LOCATION_SIZE)+27] = value
+}
+
+func LocationSetWeapons(data *[]byte, locationsOffset uint, i uint, krysKnives byte, laserPistols byte, weirdingModules byte, atomics byte) {
+	LocationSetKrysKnives(data, locationsOffset, i, krysKnives)
+	LocationSetLaserPistols(data, locationsOffset, i, laserPistols)
+	LocationSetWeirdingModules(data, locationsOffset, i, weirdingModules)
+	LocationSetAtomics(data, locationsOffset, i, atomics)
 }
 
 func LocationPrint(data *[]byte, mode uint, i uint) {

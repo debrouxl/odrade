@@ -80,8 +80,12 @@ func TroopSetMotivation(data *[]byte, troopsOffset uint, i uint, value byte) {
 	(*data)[(troopsOffset+(i-1)*TROOP_SIZE)+21] = value
 }
 
-func TroopGetSpiceSkill(data *[]byte, troopsOffset uint, i uint) byte {
+func TroopGetSpiceMiningSkill(data *[]byte, troopsOffset uint, i uint) byte {
 	return (*data)[(troopsOffset+(i-1)*TROOP_SIZE)+22]
+}
+
+func TroopSetSpiceMiningSkill(data *[]byte, troopsOffset uint, i uint, value byte) {
+	(*data)[(troopsOffset+(i-1)*TROOP_SIZE)+22] = value
 }
 
 func TroopGetArmySkill(data *[]byte, troopsOffset uint, i uint) byte {
@@ -149,7 +153,7 @@ func TroopPrint(data *[]byte, mode uint, i uint) {
 		speech := TroopGetSpeech(data, troopsOffset, i)
 		fieldJ := TroopGetFieldJ(data, troopsOffset, i)
 		motivation := TroopGetMotivation(data, troopsOffset, i)
-		spiceSkill := TroopGetSpiceSkill(data, troopsOffset, i)
+		spiceSkill := TroopGetSpiceMiningSkill(data, troopsOffset, i)
 		armySkill := TroopGetArmySkill(data, troopsOffset, i)
 		ecologySkill := TroopGetEcologySkill(data, troopsOffset, i)
 		equipment := TroopGetEquipment(data, troopsOffset, i)
