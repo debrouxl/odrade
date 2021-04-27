@@ -33,6 +33,11 @@ const LOCATION_SIZE = 28
 const TROOP_MAX_ID = 68
 const TROOP_SIZE = 27
 
+const TROOP_POSITION_TOP_LOCATION_FIRST = 9
+
+const TROOP_OCCUPATION_NOT_HIRED_MASK = 0x80
+const TROOP_OCCUPATION_HARKONNEN_MINING_SPICE = 0xC
+
 const (
 	LOCATION_STATUS_VEGETATION   = 0x01
 	LOCATION_STATUS_IN_BATTLE    = 0x02
@@ -82,6 +87,26 @@ func performInitialSanityCheck(indata []byte, mode uint) bool {
 	return false
 }
 
+func performFinalSanityCheck(data *[]byte, mode uint) bool {
+	_, _, _ /*locationsOffset*/, troopsOffset, _, _ := GetOffsets(mode)
+	/*for i := uint(1); i <= LOCATION_MAX_ID; i++ {
+
+	}*/
+	ret := true
+
+	for i := uint(1); i <= TROOP_MAX_ID; i++ {
+		if TroopGetOccupation(data, troopsOffset, i) == TROOP_OCCUPATION_HARKONNEN_MINING_SPICE|TROOP_OCCUPATION_NOT_HIRED_MASK && TroopGetPosition(data, troopsOffset, i) < TROOP_POSITION_TOP_LOCATION_FIRST && i != 67 {
+			fmt.Printf("Warning: troop #%d is Harkonnen but has improper position\n", i)
+			ret = false
+		}
+		if TroopGetOccupation(data, troopsOffset, i) != TROOP_OCCUPATION_HARKONNEN_MINING_SPICE|TROOP_OCCUPATION_NOT_HIRED_MASK && TroopGetPosition(data, troopsOffset, i) >= TROOP_POSITION_TOP_LOCATION_FIRST {
+			fmt.Printf("Warning: troop #%d is Fremen but has improper position\n", i)
+			ret = false
+		}
+	}
+	return ret
+}
+
 func GetOffsets(mode uint) (uint, uint, uint, uint, uint, uint) {
 	var dialoguesOffset uint = 0x3339
 	var timeCountersOffset uint
@@ -118,13 +143,13 @@ func GetOffsets(mode uint) (uint, uint, uint, uint, uint, uint) {
 	return dialoguesOffset, timeCountersOffset, locationsOffset, troopsOffset, npcsOffset, smugglersOffset
 }
 
-func checkSupportedVersion(indata []byte, mode uint) ([]byte, error) {
+func checkSupportedVersion(data *[]byte, mode uint) error {
 	_, timeCountersOffset, _, _, _, _ := GetOffsets(mode)
 
 	// Compute the hash of everything but the time counters (sub-period counter + period counter).
 	hasher := sha512.New()
-	hasher.Write(indata[:timeCountersOffset])
-	hasher.Write(indata[timeCountersOffset+4:])
+	hasher.Write((*data)[:timeCountersOffset])
+	hasher.Write((*data)[timeCountersOffset+4:])
 	value := hasher.Sum(nil)
 	valueStr := hex.EncodeToString(value[:])
 
@@ -142,10 +167,10 @@ func checkSupportedVersion(indata []byte, mode uint) ([]byte, error) {
 
 	println(valueStr)
 	if valueStr != knownvalue {
-		return indata, errors.New("Unexpected contents for the input file")
+		return errors.New("Unexpected contents for the input file")
 	} else {
 		println("File content matches the expected one, good") // Well, almost - but in 2021, no collisions are publicly known for the SHA-2 family :)
-		return indata, nil
+		return nil
 	}
 }
 
@@ -284,7 +309,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	uncompressed, err = checkSupportedVersion(uncompressed, mode)
+	err = checkSupportedVersion(&uncompressed, mode)
 	if err != nil {
 		println("Warning: file format is not supported, you're on your own")
 	}
@@ -310,7 +335,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	// TODO perform final sanity check ?
+	if !performFinalSanityCheck(&uncompressed, mode) {
+		println("Final sanity check failed")
+		os.Exit(1)
+	}
 
 	// Perform RLE compression.
 	compressed, err := RLECompress(uncompressed)
