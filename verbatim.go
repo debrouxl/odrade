@@ -9,7 +9,7 @@
 package main
 
 // For testing purposes, primarily round-trip decompression + compression sanity check: a modification function which does nothing.
-func ModifyTroopAndLocationData(data *[]byte, mode uint) error {
+func ModifyTroopAndLocationData(data *DuneMetadata) error {
 	/*LocationPrint(data, mode, 1)
 	LocationPrint(data, mode, 2)
 	TroopPrint(data, mode, 1)
@@ -17,6 +17,14 @@ func ModifyTroopAndLocationData(data *[]byte, mode uint) error {
 	return nil
 }
 
-func ModifyNPCAndSmugglerData(data *[]byte, mode uint) error {
+func ModifyNPCAndSmugglerData(data *DuneMetadata) error {
 	return nil
+}
+
+func ChangelogPrologue() (string, error) {
+	return "", nil
+}
+
+func ChangelogEpilogue() (string, error) {
+	return "", nil
 }

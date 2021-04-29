@@ -30,14 +30,6 @@ const RLE_BYTE = 0xF7
 const LOCATION_MAX_ID = 70
 const LOCATION_SIZE = 28
 
-const TROOP_MAX_ID = 68
-const TROOP_SIZE = 27
-
-const TROOP_POSITION_TOP_LOCATION_FIRST = 9
-
-const TROOP_OCCUPATION_NOT_HIRED_MASK = 0x80
-const TROOP_OCCUPATION_HARKONNEN_MINING_SPICE = 0xC
-
 const (
 	LOCATION_STATUS_VEGETATION   = 0x01
 	LOCATION_STATUS_IN_BATTLE    = 0x02
@@ -47,23 +39,55 @@ const (
 	LOCATION_STATUS_UNDISCOVERED = 0x80
 )
 
+const TROOP_MAX_ID = 68
+const TROOP_SIZE = 27
+
+const TROOP_POSITION_TOP_LOCATION_FIRST = 9
+
+const TROOP_OCCUPATION_NOT_HIRED_MASK = 0x80
+const TROOP_OCCUPATION_HARKONNEN_MINING_SPICE = 0xC
+
 const (
-	EQUIPMENT_BULB             = 0x02
-	EQUIPMENT_ATOMICS          = 0x04
-	EQUIPMENT_WEIRDING_MODULES = 0x08
-	EQUIPMENT_LASER_GUNS       = 0x10
-	EQUIPMENT_KRYS_KNIVES      = 0x20
-	EQUIPMENT_ORNITHOPTER      = 0x40
-	EQUIPMENT_HARVESTER        = 0x80
+	TROOP_EQUIPMENT_BULB             = 0x02
+	TROOP_EQUIPMENT_ATOMICS          = 0x04
+	TROOP_EQUIPMENT_WEIRDING_MODULES = 0x08
+	TROOP_EQUIPMENT_LASER_GUNS       = 0x10
+	TROOP_EQUIPMENT_KRYS_KNIVES      = 0x20
+	TROOP_EQUIPMENT_ORNITHOPTER      = 0x40
+	TROOP_EQUIPMENT_HARVESTER        = 0x80
 )
 
-func performInitialSanityCheck(indata []byte, mode uint) bool {
+const NPC_MAX_ID = 15
+const NPC_SIZE = 8
+const NPC_PADDING = 8
+
+const SMUGGLER_MAX_ID = 6
+const SMUGGLER_SIZE = 14
+const SMUGGLER_PADDING = 3
+
+type DuneMetadata struct {
+	mode               uint
+	indata             []byte
+	uncompressed       []byte
+	modified           []byte
+	compressed         []byte
+	changelog          string
+	shuffledTroops     map[uint]uint
+	dialoguesOffset    uint
+	timeCountersOffset uint
+	locationsOffset    uint
+	troopsOffset       uint
+	npcsOffset         uint
+	smugglersOffset    uint
+}
+
+func performInitialSanityCheck(data *DuneMetadata) bool {
 	// We know how large a valid DUNE??S0.SAV file can be.
-	if len(indata) > 9500 && len(indata) < 10000 {
-		if indata[2] == RLE_BYTE && indata[len(indata)-1] != RLE_BYTE {
-			var pos0 uint16 = uint16(indata[4]) + 255*uint16(indata[5])
-			var expectedPos0 uint16 = uint16(len(indata))
-			switch mode {
+	if len((*data).indata) > 9500 && len((*data).indata) < 10000 {
+		if ((*data).indata)[2] == RLE_BYTE && ((*data).indata)[len((*data).indata)-1] != RLE_BYTE {
+			var pos0 uint16 = uint16(((*data).indata)[4]) + 255*uint16(((*data).indata)[5])
+			var expectedPos0 uint16 = uint16(len((*data).indata))
+			switch data.mode {
 			case MODE_DUNE21:
 				expectedPos0 = expectedPos0 - 39
 			case MODE_DUNE23:
@@ -87,19 +111,15 @@ func performInitialSanityCheck(indata []byte, mode uint) bool {
 	return false
 }
 
-func performFinalSanityCheck(data *[]byte, mode uint) bool {
-	_, _, _ /*locationsOffset*/, troopsOffset, _, _ := GetOffsets(mode)
-	/*for i := uint(1); i <= LOCATION_MAX_ID; i++ {
-
-	}*/
+func performFinalSanityCheck(data *DuneMetadata, mode uint) bool {
 	ret := true
 
 	for i := uint(1); i <= TROOP_MAX_ID; i++ {
-		if TroopGetOccupation(data, troopsOffset, i) == TROOP_OCCUPATION_HARKONNEN_MINING_SPICE|TROOP_OCCUPATION_NOT_HIRED_MASK && TroopGetPosition(data, troopsOffset, i) < TROOP_POSITION_TOP_LOCATION_FIRST && i != 67 {
+		if TroopGetOccupation(data, i) == TROOP_OCCUPATION_HARKONNEN_MINING_SPICE|TROOP_OCCUPATION_NOT_HIRED_MASK && TroopGetPosition(data, i) < TROOP_POSITION_TOP_LOCATION_FIRST && i != 67 {
 			fmt.Printf("Warning: troop #%d is Harkonnen but has improper position\n", i)
 			ret = false
 		}
-		if TroopGetOccupation(data, troopsOffset, i) != TROOP_OCCUPATION_HARKONNEN_MINING_SPICE|TROOP_OCCUPATION_NOT_HIRED_MASK && TroopGetPosition(data, troopsOffset, i) >= TROOP_POSITION_TOP_LOCATION_FIRST {
+		if TroopGetOccupation(data, i) != TROOP_OCCUPATION_HARKONNEN_MINING_SPICE|TROOP_OCCUPATION_NOT_HIRED_MASK && TroopGetPosition(data, i) >= TROOP_POSITION_TOP_LOCATION_FIRST {
 			fmt.Printf("Warning: troop #%d is Fremen but has improper position\n", i)
 			ret = false
 		}
@@ -143,18 +163,16 @@ func GetOffsets(mode uint) (uint, uint, uint, uint, uint, uint) {
 	return dialoguesOffset, timeCountersOffset, locationsOffset, troopsOffset, npcsOffset, smugglersOffset
 }
 
-func checkSupportedVersion(data *[]byte, mode uint) error {
-	_, timeCountersOffset, _, _, _, _ := GetOffsets(mode)
-
+func checkSupportedVersion(data *DuneMetadata) error {
 	// Compute the hash of everything but the time counters (sub-period counter + period counter).
 	hasher := sha512.New()
-	hasher.Write((*data)[:timeCountersOffset])
-	hasher.Write((*data)[timeCountersOffset+4:])
+	hasher.Write(((*data).uncompressed)[:data.timeCountersOffset])
+	hasher.Write(((*data).uncompressed)[data.timeCountersOffset+4:])
 	value := hasher.Sum(nil)
 	valueStr := hex.EncodeToString(value[:])
 
 	var knownvalue string
-	switch mode {
+	switch data.mode {
 	case MODE_DUNE21:
 		knownvalue = "c1085ed018e71443be3d2cb4337f52b8599e3823fb4fb7e0219eac3058a1d7f814e99eb048248cab9ff4b10e85f3e03ef1b37c93037d4b14b5a8a7a35212e41c"
 	case MODE_DUNE23:
@@ -174,22 +192,22 @@ func checkSupportedVersion(data *[]byte, mode uint) error {
 	}
 }
 
-func RLEDecompress(indata []byte) ([]byte, error) {
+func RLEDecompress(indata *[]byte) ([]byte, error) {
 	// Temporarily modify RLE byte value, and expand the array by two dummy bytes so that indata[x+2] falls within array bounds.
-	println(len(indata))
-	indata[2] = 0xF6
-	indata = append(indata, indata[len(indata)-1]+1)
-	indata = append(indata, indata[len(indata)-1]+1)
+	println(len(*indata))
+	(*indata)[2] = 0xF6
+	(*indata) = append((*indata), (*indata)[len((*indata))-1]+1)
+	(*indata) = append((*indata), (*indata)[len((*indata))-1]+1)
 
 	// Even if the file were almost entirely made of F7 FF xx sequences, the size of the output would be less than 9 MB, which isn't really excessive on remotely modern computers.
 	outdata := make([]byte, 0)
-	for i := 0; i < len(indata)-2; {
-		if indata[i] != RLE_BYTE {
-			outdata = append(outdata, indata[i])
+	for i := 0; i < len((*indata))-2; {
+		if (*indata)[i] != RLE_BYTE {
+			outdata = append(outdata, (*indata)[i])
 			i = i + 1
 		} else {
-			for j := 0; j < int(indata[i+1]); j++ {
-				outdata = append(outdata, indata[i+2])
+			for j := 0; j < int((*indata)[i+1]); j++ {
+				outdata = append(outdata, (*indata)[i+2])
 			}
 			i = i + 3
 		}
@@ -202,16 +220,16 @@ func RLEDecompress(indata []byte) ([]byte, error) {
 	return outdata, nil
 }
 
-func RLECompress(indata []byte) ([]byte, error) {
+func RLECompress(indata *[]byte) ([]byte, error) {
 	// Temporarily modify RLE byte value, and expand the array by two dummy bytes so that indata[x+2] falls within array bounds.
-	indata = append(indata, indata[len(indata)-1]+1)
-	indata = append(indata, indata[len(indata)-1]+1)
+	*indata = append(*indata, (*indata)[len(*indata)-1]+1)
+	*indata = append(*indata, (*indata)[len(*indata)-1]+1)
 
 	outdata := make([]byte, 0)
-	for i := 0; i < len(indata)-2; {
-		b1 := indata[i]
-		b2 := indata[i+1]
-		b3 := indata[i+2]
+	for i := 0; i < len(*indata)-2; {
+		b1 := (*indata)[i]
+		b2 := (*indata)[i+1]
+		b3 := (*indata)[i+2]
 		// RLE byte ?
 		if b1 == RLE_BYTE {
 			// Yup, replace it.
@@ -233,7 +251,7 @@ func RLECompress(indata []byte) ([]byte, error) {
 						i = i + 255
 						break
 					}
-					if indata[j] == b1 {
+					if (*indata)[j] == b1 {
 						c++
 						j++
 					} else {
@@ -257,6 +275,8 @@ func RLECompress(indata []byte) ([]byte, error) {
 }
 
 func main() {
+	var data DuneMetadata
+	var err error
 
 	if len(os.Args) < 2 {
 		println("Usage: dunes0mod <input file>")
@@ -284,86 +304,104 @@ func main() {
 		fmt.Printf("File type is probably %d\n", mode)
 	}*/
 
+	data.mode = mode
+
 	// If users want to DoS their computers by feeding a large file into this program... too bad for them ?
-	indata, err := os.ReadFile(os.Args[1])
+	data.indata, err = os.ReadFile(os.Args[1])
 	if err != nil {
 		println("Failed to read input file")
 		os.Exit(1)
 	}
 
-	if !performInitialSanityCheck(indata, mode) {
+	if !performInitialSanityCheck(&data) {
 		println("Input file validation failed")
 		os.Exit(1)
 	}
 
-	uncompressed, err := RLEDecompress(indata)
+	data.uncompressed, err = RLEDecompress(&(data.indata))
 	if err != nil {
 		println("Decompression failed")
 		os.Exit(1)
 	}
-	println(len(uncompressed))
+	println(len(data.uncompressed))
 
-	err = os.WriteFile(os.Args[1]+"_uncompressed", uncompressed, 0644)
+	err = os.WriteFile(os.Args[1]+"_uncompressed", data.uncompressed, 0644)
 	if err != nil {
 		println("Writing uncompressed file failed")
 		os.Exit(1)
 	}
 
-	err = checkSupportedVersion(&uncompressed, mode)
+	err = checkSupportedVersion(&data)
 	if err != nil {
 		println("Warning: file format is not supported, you're on your own")
 	}
 
+	data.dialoguesOffset, data.timeCountersOffset, data.locationsOffset, data.troopsOffset, data.npcsOffset, data.smugglersOffset = GetOffsets(data.mode)
+
+	// Make a copy of the uncompressed input data, so that we can perform a diff later to (eventually) produce the changelog.
+	data.modified = make([]byte, len(data.uncompressed))
+	copy(data.modified[:], data.uncompressed[:])
+
 	// Modify data inside a function located into another file - that's how the set of modifications can be selected.
-	err = ModifyTroopAndLocationData(&uncompressed, mode)
+	err = ModifyTroopAndLocationData(&data)
 	if err != nil {
 		println("Modification 1 failed")
 		os.Exit(1)
 	}
-	println(len(uncompressed))
+	println(len(data.modified))
 
-	err = ModifyNPCAndSmugglerData(&uncompressed, mode)
+	err = ModifyNPCAndSmugglerData(&data)
 	if err != nil {
 		println("Modification 2 failed")
 		os.Exit(1)
 	}
-	println(len(uncompressed))
+	println(len(data.modified))
 
-	err = os.WriteFile(os.Args[1]+"_modified", uncompressed, 0644)
+	err = os.WriteFile(os.Args[1]+"_modified", data.modified, 0644)
 	if err != nil {
 		println("Writing modified, uncompressed file failed")
 		os.Exit(1)
 	}
 
-	if !performFinalSanityCheck(&uncompressed, mode) {
+	if !performFinalSanityCheck(&data, mode) {
 		println("Final sanity check failed")
 		os.Exit(1)
 	}
 
+	data.changelog, err = ChangelogPrologue()
+
+	// TODO for changelog generation:
+	// troop diff: traversing locations in ascending order, print Harkonnen troops diff, then Fremen troops diff
+	// It may be interesting to build up a locations map
+	// Shuffle map.
+	// locations diff: traversing locations in ascending order
+
+	println(data.changelog[0:100])
+
 	// Perform RLE compression.
-	compressed, err := RLECompress(uncompressed)
+	data.compressed, err = RLECompress(&data.modified)
 	if err != nil {
 		println("Compression failed")
 		os.Exit(1)
 	}
-	println(len(compressed))
+	println(len(data.compressed))
 
 	// Update the two bytes at offsets 4-5 according to the compressed size
-	pos0 := uint16(len(compressed))
+	pos0 := uint16(len(data.compressed))
 	switch mode {
 	case MODE_DUNE21, MODE_DUNE23, MODE_DUNE24:
 		pos0 = pos0 - 39
 	case MODE_DUNE37:
 		pos0 = pos0 - 40
 	}
-	compressed[4] = byte(pos0 % 255)
-	compressed[5] = byte(pos0 / 255)
+	data.compressed[4] = byte(pos0 % 255)
+	data.compressed[5] = byte(pos0 / 255)
 
 	// Restore RLE byte value.
-	compressed[2] = RLE_BYTE
+	data.compressed[2] = RLE_BYTE
 
 	// Write compressed output file.
-	err = os.WriteFile(os.Args[1]+"_compressed", compressed, 0644)
+	err = os.WriteFile(os.Args[1]+"_compressed", data.compressed, 0644)
 	if err != nil {
 		println("Writing modified, compressed file failed")
 		os.Exit(1)
