@@ -140,7 +140,7 @@ func GetOffsets(mode uint) (uint, uint, uint, uint, uint, uint) {
 		locationsOffset = 0x44BB
 		troopsOffset = 0x4C65
 		npcsOffset = 0x5391
-		smugglersOffset = 0x5393
+		smugglersOffset = 0x5493
 	case MODE_DUNE23:
 		timeCountersOffset = 0x43CF
 		locationsOffset = 0x44CF
@@ -331,12 +331,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	data.dialoguesOffset, data.timeCountersOffset, data.locationsOffset, data.troopsOffset, data.npcsOffset, data.smugglersOffset = GetOffsets(data.mode)
+
 	err = checkSupportedVersion(&data)
 	if err != nil {
 		println("Warning: file format is not supported, you're on your own")
 	}
-
-	data.dialoguesOffset, data.timeCountersOffset, data.locationsOffset, data.troopsOffset, data.npcsOffset, data.smugglersOffset = GetOffsets(data.mode)
 
 	// Make a copy of the uncompressed input data, so that we can perform a diff later to (eventually) produce the changelog.
 	data.modified = make([]byte, len(data.uncompressed))
