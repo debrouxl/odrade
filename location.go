@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: GPL-2.0
 //
 // Sources of information:
-// * https://forum.dune2k.com/topic/20497-dune-cheats/
+// * https://forum.dune2k.com/topic/20497-dune-cheats/ : especially John2022's large post
 // * hugslab
 // * Dmitri Fatkin
 
 package main
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -73,127 +74,127 @@ func LocationGetNameStr(first byte, second byte) string {
 }
 
 func LocationGetName(data *DuneMetadata, i uint) (byte, byte) {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+0], ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+1]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+0], (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+1]
 }
 
 func LocationGetCoordinates(data *DuneMetadata, i uint) []byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+2 : (data.locationsOffset+(i-1)*LOCATION_SIZE)+8]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+2 : (data.locationsOffset+(i-1)*LOCATION_SIZE)+8]
 }
 
 func LocationGetAppearance(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+8]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+8]
 }
 
 func LocationSetAppearance(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+8] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+8] = value
 }
 
 func LocationGetTroopID(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+9]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+9]
 }
 
 func LocationSetTroopID(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+9] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+9] = value
 }
 
 func LocationGetStatus(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+10]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+10]
 }
 
 func LocationSetStatus(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+10] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+10] = value
 }
 
 func LocationGetStage(data *DuneMetadata, i uint) []byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+11 : (data.locationsOffset+(i-1)*LOCATION_SIZE)+16]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+11 : (data.locationsOffset+(i-1)*LOCATION_SIZE)+16]
 }
 
 func LocationSetStage(data *DuneMetadata, i uint, stage []byte) {
-	copy(((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+11:(data.locationsOffset+(i-1)*LOCATION_SIZE)+16], stage[0:5])
+	copy((*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+11:(data.locationsOffset+(i-1)*LOCATION_SIZE)+16], stage[0:5])
 }
 
 func LocationGetFieldID(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+16]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+16]
 }
 
 func LocationGetSpiceAmount(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+17]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+17]
 }
 
 func LocationSetSpiceAmount(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+17] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+17] = value
 }
 
 func LocationGetSpiceDensity(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+18]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+18]
 }
 
 func LocationSetSpiceDensity(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+18] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+18] = value
 }
 
 func LocationGetFieldJ(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+19]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+19]
 }
 
 func LocationGetHarvesters(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+20]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+20]
 }
 
 func LocationSetHarvesters(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+20] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+20] = value
 }
 
 func LocationGetOrnithopters(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+21]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+21]
 }
 
 func LocationSetOrnithopters(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+21] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+21] = value
 }
 
 func LocationGetKrysKnives(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+22]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+22]
 }
 
 func LocationSetKrysKnives(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+22] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+22] = value
 }
 
 func LocationGetLaserGuns(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+23]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+23]
 }
 
 func LocationSetLaserGuns(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+23] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+23] = value
 }
 
 func LocationGetWeirdingModules(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+24]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+24]
 }
 
 func LocationSetWeirdingModules(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+24] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+24] = value
 }
 
 func LocationGetAtomics(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+25]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+25]
 }
 
 func LocationSetAtomics(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+25] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+25] = value
 }
 
 func LocationGetBulbs(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+26]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+26]
 }
 
 func LocationGetWater(data *DuneMetadata, i uint) byte {
-	return ((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+27]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+27]
 }
 
 func LocationSetWater(data *DuneMetadata, i uint, value byte) {
-	((*data).modified)[(data.locationsOffset+(i-1)*LOCATION_SIZE)+27] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+27] = value
 }
 
 func LocationSetWeapons(data *DuneMetadata, i uint, krysKnives byte, laserGuns byte, weirdingModules byte, atomics byte) {
@@ -204,8 +205,7 @@ func LocationSetWeapons(data *DuneMetadata, i uint, krysKnives byte, laserGuns b
 }
 
 func LocationPrint(data *DuneMetadata, i uint) {
-	// Number locations from 1
-	if i > 0 && i <= LOCATION_MAX_ID {
+	if i >= LOCATION_MIN_ID && i <= LOCATION_MAX_ID {
 		namefirst, namesecond := LocationGetName(data, i)
 		namestr := LocationGetNameStr(namefirst, namesecond)
 		coordinates := LocationGetCoordinates(data, i)
@@ -229,4 +229,27 @@ func LocationPrint(data *DuneMetadata, i uint) {
 		fmt.Printf("\tAppearance: %02x Troop ID: %02x Status: %02x Stage: %x\n\tSpice field ID: %02x Spice amount: %02x Spice density: %02x J: %02x\n", appearance, troopID, status, stage, spiceFieldID, spiceAmount, spiceDensity, fieldJ)
 		fmt.Printf("\tHarvesters: %02x Ornithopters: %02x Krys knives: %02x Laser guns: %02x Weirding modules: %02x Atomics: %02x Bulbs: %02x Water: %02x\n", harvesters, ornithopters, krysKnives, laserGuns, weirdingModules, atomics, bulbs, water)
 	}
+}
+
+func LocationDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) {
+	if i >= LOCATION_MIN_ID && i <= LOCATION_MAX_ID {
+		changelog := ""
+
+		return changelog, nil
+	} else {
+		return "", errors.New("Improper location ID")
+	}
+}
+
+func LocationDiffAllProduceChangelogEntries(data *DuneMetadata) (string, error) {
+	changelog := "TODO"
+	for i := uint(LOCATION_MIN_ID); i <= LOCATION_MAX_ID; i++ {
+		changelogLocation, err := LocationDiffProduceChangelogEntry(data, i)
+		if err != nil {
+			return "", err
+		}
+		changelog = changelog + changelogLocation
+	}
+
+	return changelog, nil
 }

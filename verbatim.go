@@ -2,11 +2,15 @@
 // SPDX-License-Identifier: GPL-2.0
 //
 // Sources of information:
-// * https://forum.dune2k.com/topic/20497-dune-cheats/
+// * https://forum.dune2k.com/topic/20497-dune-cheats/ : especially John2022's large post
 // * hugslab
 // * Dmitri Fatkin
 
 package main
+
+func SetConfig(data *DuneMetadata) error {
+	return nil
+}
 
 // For testing purposes, primarily round-trip decompression + compression sanity check: a modification function which does nothing.
 func ModifyTroopAndLocationData(data *DuneMetadata) error {
