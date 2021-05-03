@@ -75,22 +75,25 @@ const SMUGGLER_SIZE = 14
 const SMUGGLER_PADDING = 3
 
 type DuneMetadata struct {
-	format                   uint
-	indata                   []byte
-	uncompressed             []byte
-	modified                 []byte
-	compressed               []byte
-	current                  *[]byte
-	changelog                string
-	dialoguesOffset          uint
-	timeCountersOffset       uint
-	locationsOffset          uint
-	troopsOffset             uint
-	npcsOffset               uint
-	smugglersOffset          uint
-	shuffledTroops           map[uint]uint
-	coordinatesMap           map[string]uint
-	specialTroopDescriptions map[uint]string
+	format                      uint
+	indata                      []byte
+	uncompressed                []byte
+	modified                    []byte
+	compressed                  []byte
+	current                     *[]byte
+	changelog                   string
+	dialoguesOffset             uint
+	timeCountersOffset          uint
+	locationsOffset             uint
+	troopsOffset                uint
+	npcsOffset                  uint
+	smugglersOffset             uint
+	shuffledTroops              map[uint]uint
+	coordinatesMap              map[string]uint
+	specialTroopDescriptions    map[uint]string
+	specialLocationDescriptions map[uint]string
+	specialNPCDescriptions      map[uint]string
+	specialSmugglerDescriptions map[uint]string
 }
 
 func performInitialSanityCheck(data *DuneMetadata) bool {
@@ -397,6 +400,9 @@ func main() {
 			(data.shuffledTroops)[i] = i
 		}
 		data.specialTroopDescriptions = make(map[uint]string)
+		data.specialLocationDescriptions = make(map[uint]string)
+		data.specialNPCDescriptions = make(map[uint]string)
+		data.specialSmugglerDescriptions = make(map[uint]string)
 
 		// Modify data inside a function located into another file - that's how the set of modifications can be selected.
 		err = ModifyTroopAndLocationData(&data)
@@ -442,7 +448,7 @@ func main() {
 			println("Error: changelog generation for troops failed")
 			os.Exit(1)
 		}
-		data.changelog = data.changelog + changelogTroops
+		data.changelog += changelogTroops
 		println(changelogTroops)
 
 		changelogLocations, err := LocationDiffAllProduceChangelogEntries(&data)
@@ -450,7 +456,7 @@ func main() {
 			println("Error: changelog generation for locations failed")
 			os.Exit(1)
 		}
-		data.changelog = data.changelog + changelogLocations
+		data.changelog += changelogLocations
 		println(changelogLocations)
 
 		changelogNPCs, err := NPCDiffAllProduceChangelogEntries(&data)
@@ -458,7 +464,7 @@ func main() {
 			println("Error: changelog generation for NPCs failed")
 			os.Exit(1)
 		}
-		data.changelog = data.changelog + changelogNPCs
+		data.changelog += changelogNPCs
 		println(changelogNPCs)
 
 		changelogSmugglers, err := SmugglerDiffAllProduceChangelogEntries(&data)
@@ -466,7 +472,7 @@ func main() {
 			println("Error: changelog generation for smugglers failed")
 			os.Exit(1)
 		}
-		data.changelog = data.changelog + changelogSmugglers
+		data.changelog += changelogSmugglers
 		println(changelogSmugglers)
 
 		epilogue, err := ChangelogEpilogue()
@@ -474,7 +480,7 @@ func main() {
 			println("Error: changelog epilogue generation failed")
 			os.Exit(1)
 		}
-		data.changelog = data.changelog + epilogue
+		data.changelog += epilogue
 
 		// Perform RLE compression.
 		data.compressed, err = RLECompress(&data.modified)

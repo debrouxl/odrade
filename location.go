@@ -9,6 +9,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 )
@@ -45,29 +46,29 @@ func LocationGetNameStr(first byte, second byte) string {
 
 	switch second {
 	case 0x01:
-		str = str + " (Atreides)"
+		str += " (Atreides)"
 	case 0x02:
-		str = str + " (Harkonnen)"
+		str += " (Harkonnen)"
 	case 0x03:
-		str = str + "-Tabr"
+		str += "-Tabr"
 	case 0x04:
-		str = str + "-Timin"
+		str += "-Timin"
 	case 0x05:
-		str = str + "-Tuek"
+		str += "-Tuek"
 	case 0x06:
-		str = str + "-Harg"
+		str += "-Harg"
 	case 0x07:
-		str = str + "-Clam"
+		str += "-Clam"
 	case 0x08:
-		str = str + "-Tsymyn"
+		str += "-Tsymyn"
 	case 0x09:
-		str = str + "-Siet"
+		str += "-Siet"
 	case 0x0a:
-		str = str + "-Pyons"
+		str += "-Pyons"
 	case 0x0b:
-		str = str + "-Pyort"
+		str += "-Pyort"
 	case 0x0c:
-		str = str + "-Celimyn"
+		str += "-Celimyn"
 	}
 
 	return str
@@ -204,6 +205,10 @@ func LocationSetWeapons(data *DuneMetadata, i uint, krysKnives byte, laserGuns b
 	LocationSetAtomics(data, i, atomics)
 }
 
+func LocationSetSpecialDescription(data *DuneMetadata, i uint, description string) {
+	((*data).specialLocationDescriptions)[i] = description
+}
+
 func LocationPrint(data *DuneMetadata, i uint) {
 	if i >= LOCATION_MIN_ID && i <= LOCATION_MAX_ID {
 		namefirst, namesecond := LocationGetName(data, i)
@@ -234,6 +239,140 @@ func LocationPrint(data *DuneMetadata, i uint) {
 func LocationDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) {
 	if i >= LOCATION_MIN_ID && i <= LOCATION_MAX_ID {
 		changelog := ""
+		// Obtain original location data.
+		(*data).current = &((*data).uncompressed)
+		namefirst1, namesecond1 := LocationGetName(data, i)
+		coordinates1 := LocationGetCoordinates(data, i)
+		appearance1 := LocationGetAppearance(data, i)
+		troopID1 := LocationGetTroopID(data, i)
+		status1 := LocationGetStatus(data, i)
+		stage1 := LocationGetStage(data, i)
+		spiceFieldID1 := LocationGetFieldID(data, i)
+		spiceAmount1 := LocationGetSpiceAmount(data, i)
+		spiceDensity1 := LocationGetSpiceDensity(data, i)
+		fieldJ1 := LocationGetFieldJ(data, i)
+		harvesters1 := LocationGetHarvesters(data, i)
+		ornithopters1 := LocationGetOrnithopters(data, i)
+		krysKnives1 := LocationGetKrysKnives(data, i)
+		laserGuns1 := LocationGetLaserGuns(data, i)
+		weirdingModules1 := LocationGetWeirdingModules(data, i)
+		atomics1 := LocationGetAtomics(data, i)
+		bulbs1 := LocationGetBulbs(data, i)
+		water1 := LocationGetWater(data, i)
+
+		// Obtain modified location data.
+		(*data).current = &((*data).modified)
+		namefirst2, namesecond2 := LocationGetName(data, i)
+		coordinates2 := LocationGetCoordinates(data, i)
+		appearance2 := LocationGetAppearance(data, i)
+		troopID2 := LocationGetTroopID(data, i)
+		status2 := LocationGetStatus(data, i)
+		stage2 := LocationGetStage(data, i)
+		spiceFieldID2 := LocationGetFieldID(data, i)
+		spiceAmount2 := LocationGetSpiceAmount(data, i)
+		spiceDensity2 := LocationGetSpiceDensity(data, i)
+		fieldJ2 := LocationGetFieldJ(data, i)
+		harvesters2 := LocationGetHarvesters(data, i)
+		ornithopters2 := LocationGetOrnithopters(data, i)
+		krysKnives2 := LocationGetKrysKnives(data, i)
+		laserGuns2 := LocationGetLaserGuns(data, i)
+		weirdingModules2 := LocationGetWeirdingModules(data, i)
+		atomics2 := LocationGetAtomics(data, i)
+		bulbs2 := LocationGetBulbs(data, i)
+		water2 := LocationGetWater(data, i)
+
+		// If there are no modifications, bail out early.
+		if (namefirst1 != namefirst2) || (namesecond1 != namesecond2) || !bytes.Equal(coordinates1, coordinates2) || (appearance1 != appearance2) || (troopID1 != troopID2) || (status1 != status2) || !bytes.Equal(stage1, stage2) || (spiceFieldID1 != spiceFieldID2) || (spiceAmount1 != spiceAmount2) || (spiceDensity1 != spiceDensity2) || (fieldJ1 != fieldJ2) || (harvesters1 != harvesters2) || (ornithopters1 != ornithopters2) || (krysKnives1 != krysKnives2) || (laserGuns1 != laserGuns2) || (weirdingModules1 != weirdingModules2) || (atomics1 != atomics2) || (bulbs1 != bulbs2) || (water1 != water2) {
+
+			changelog = LocationGetNameStr(namefirst2, namesecond2) + ":"
+
+			if troopID1 != troopID2 {
+				changelog += fmt.Sprintf(" switched housed troop ID from %d to %d,", troopID1, troopID2)
+			}
+
+			if appearance1 != appearance2 {
+				changelog += fmt.Sprintf(" changed appearance type from %d to %d,", appearance1, appearance2)
+			}
+
+			if status1 != status2 {
+				changelog += fmt.Sprintf(" changed status from %d to %d,", status1, status2)
+			}
+
+			if spiceDensity1 < spiceDensity2 {
+				changelog += fmt.Sprintf(" scaled up the spice density from %d to %d,", spiceDensity1, spiceDensity2)
+			} else if spiceDensity1 > spiceDensity2 {
+				changelog += fmt.Sprintf(" scaled down the spice density from %d to %d,", spiceDensity1, spiceDensity2)
+			}
+
+			if spiceAmount1 < spiceAmount2 {
+				changelog += fmt.Sprintf(" raised the amount of spice from %d to %d,", spiceAmount1, spiceAmount2)
+			} else if spiceAmount1 > spiceAmount2 {
+				changelog += fmt.Sprintf(" lowered the amount of spice from %d to %d,", spiceAmount1, spiceAmount2)
+			}
+
+			if harvesters1 < harvesters2 {
+				changelog += fmt.Sprintf(" increased the number of harvesters from %d to %d,", harvesters1, harvesters2)
+			} else if harvesters1 > harvesters2 {
+				changelog += fmt.Sprintf(" decreased the number of harvesters from %d to %d,", harvesters1, harvesters2)
+			}
+
+			if ornithopters1 < ornithopters2 {
+				changelog += fmt.Sprintf(" increased the number of ornithopters from %d to %d,", ornithopters1, ornithopters2)
+			} else if ornithopters1 > ornithopters2 {
+				changelog += fmt.Sprintf(" decreased the number of ornithopters from %d to %d,", ornithopters1, ornithopters2)
+			}
+
+			if krysKnives1 < krysKnives2 {
+				changelog += fmt.Sprintf(" increased the number of krys knives from %d to %d,", krysKnives1, krysKnives2)
+			} else if krysKnives1 > krysKnives2 {
+				changelog += fmt.Sprintf(" decreased the number of krys knives from %d to %d,", krysKnives1, krysKnives2)
+			}
+
+			if laserGuns1 < laserGuns2 {
+				changelog += fmt.Sprintf(" increased the number of laser guns from %d to %d,", laserGuns1, laserGuns2)
+			} else if laserGuns1 > laserGuns2 {
+				changelog += fmt.Sprintf(" decreased the number of laser guns from %d to %d,", laserGuns1, laserGuns2)
+			}
+
+			if weirdingModules1 < weirdingModules2 {
+				changelog += fmt.Sprintf(" increased the number of weirding modules from %d to %d,", weirdingModules1, weirdingModules2)
+			} else if weirdingModules1 > weirdingModules2 {
+				changelog += fmt.Sprintf(" decreased the number of weirding modules from %d to %d,", weirdingModules1, weirdingModules2)
+			}
+
+			if atomics1 < atomics2 {
+				changelog += fmt.Sprintf(" increased the number of atomics from %d to %d,", atomics1, atomics2)
+			} else if atomics1 > atomics2 {
+				changelog += fmt.Sprintf(" decreased the number of atomics from %d to %d,", atomics1, atomics2)
+			}
+
+			if bulbs1 < bulbs2 {
+				changelog += fmt.Sprintf(" increased the number of bulbs from %d to %d,", bulbs1, bulbs2)
+			} else if bulbs1 > bulbs2 {
+				changelog += fmt.Sprintf(" decreased the number of bulbs from %d to %d,", bulbs1, bulbs2)
+			}
+
+			if water1 < water2 {
+				changelog += fmt.Sprintf(" expanded the amount of water from %d to %d,", water1, water2)
+			} else if water1 > water2 {
+				changelog += fmt.Sprintf(" drained the amount of water from %d to %d,", water1, water2)
+			}
+
+			if !bytes.Equal(stage1, stage2) {
+				changelog += fmt.Sprintf(" changed game stage for finding it from %d to %d,", stage1[0], stage2[0])
+			}
+
+			// Trim final ","
+			if changelog[len(changelog)-1] == ',' {
+				changelog = changelog[0 : len(changelog)-1]
+				changelog += "."
+			}
+
+			specialDescription := data.specialLocationDescriptions[i]
+			if specialDescription != "" {
+				changelog += specialDescription
+			}
+		}
 
 		return changelog, nil
 	} else {
@@ -242,14 +381,21 @@ func LocationDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, erro
 }
 
 func LocationDiffAllProduceChangelogEntries(data *DuneMetadata) (string, error) {
-	changelog := "TODO"
+	changelog := `LOCATION ADJUSTMENTS:
+
+`
 	for i := uint(LOCATION_MIN_ID); i <= LOCATION_MAX_ID; i++ {
 		changelogLocation, err := LocationDiffProduceChangelogEntry(data, i)
 		if err != nil {
 			return "", err
 		}
-		changelog = changelog + changelogLocation
+		if changelogLocation != "" {
+			changelog += changelogLocation + "\n"
+		}
 	}
 
+	if changelog[len(changelog)-1] == '\n' && changelog[len(changelog)-2] != '\n' {
+		changelog += "\n"
+	}
 	return changelog, nil
 }

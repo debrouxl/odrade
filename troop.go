@@ -217,10 +217,6 @@ func TroopIsFremen(occupation byte) bool {
 }
 
 func TroopDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) {
-	//1. Modifications for Harkonnen troop 67 at Harkonnen Palace: population increased from 100 to 2500, motivation raised from 8 to 68,
-	//army skill improved from 95 to 206, equipment now includes Atomic Weapons. Positioning rearranged from "on top" to "the bottom" of the palace
-	//to affect possibly-liberated group.
-
 	if i >= TROOP_MIN_ID && i <= TROOP_MAX_ID {
 		changelog := ""
 		// Obtain original troop data.
@@ -242,27 +238,32 @@ func TroopDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) 
 		equipment1 := TroopGetEquipment(data, i)
 		population1 := TroopGetPopulation(data, i)
 
+		// TODO handle troop swaps and shuffles better.
+
 		// Obtain modified troop data.
-
-		// TODO handle troop swaps and shuffles better ?
-
+		j := i
 		(*data).current = &((*data).modified)
-		troopID2 := TroopGetTroopID(data, i)
-		nextTroopID2 := TroopGetNextTroopID(data, i)
-		position2 := TroopGetPosition(data, i)
-		occupation2 := TroopGetOccupation(data, i)
-		fieldE2 := TroopGetFieldE(data, i)
-		coordinates2 := TroopGetCoordinates(data, i)
-		fieldG2 := TroopGetFieldG(data, i)
-		dissatisfaction2 := TroopGetDissatisfaction(data, i)
-		speech2 := TroopGetSpeech(data, i)
-		fieldJ2 := TroopGetFieldJ(data, i)
-		motivation2 := TroopGetMotivation(data, i)
-		spiceSkill2 := TroopGetSpiceMiningSkill(data, i)
-		armySkill2 := TroopGetArmySkill(data, i)
-		ecologySkill2 := TroopGetEcologySkill(data, i)
-		equipment2 := TroopGetEquipment(data, i)
-		population2 := TroopGetPopulation(data, i)
+		troopID2 := TroopGetTroopID(data, j)
+		nextTroopID2 := TroopGetNextTroopID(data, j)
+		occupation2 := TroopGetOccupation(data, j)
+		/*if occupation1 != occupation2 {
+			// Troop shuffled in such a way that it switched from Fremen to Harkonnen or from Harkonnen to Fremen.
+			// We might get a better diff if we use the original ID instead... well, not so simple :)
+			j = data.shuffledTroops[i]
+		}*/
+		position2 := TroopGetPosition(data, j)
+		fieldE2 := TroopGetFieldE(data, j)
+		coordinates2 := TroopGetCoordinates(data, j)
+		fieldG2 := TroopGetFieldG(data, j)
+		dissatisfaction2 := TroopGetDissatisfaction(data, j)
+		speech2 := TroopGetSpeech(data, j)
+		fieldJ2 := TroopGetFieldJ(data, j)
+		motivation2 := TroopGetMotivation(data, j)
+		spiceSkill2 := TroopGetSpiceMiningSkill(data, j)
+		armySkill2 := TroopGetArmySkill(data, j)
+		ecologySkill2 := TroopGetEcologySkill(data, j)
+		equipment2 := TroopGetEquipment(data, j)
+		population2 := TroopGetPopulation(data, j)
 
 		// If there are no modifications, bail out early.
 		if (troopID1 != troopID2) || (nextTroopID1 != nextTroopID2) || (position1 != position2) || (occupation1 != occupation2) || (fieldE1 != fieldE2) || !bytes.Equal(coordinates1, coordinates2) || !bytes.Equal(fieldG1, fieldG2) || (dissatisfaction1 != dissatisfaction2) || (speech1 != speech2) || (fieldJ1 != fieldJ2) || (motivation1 != motivation2) || (spiceSkill1 != spiceSkill2) || (armySkill1 != armySkill2) || (ecologySkill1 != ecologySkill2) || (equipment1 != equipment2) || (population1 != population2) {
@@ -272,13 +273,16 @@ func TroopDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) 
 			} else {
 				troopKind = "Harkonnen"
 			}
-			locationID := (*data).coordinatesMap[hex.EncodeToString(coordinates2)]
-			namefirst, namesecond := LocationGetName(data, locationID)
+			locationID1Str := (*data).coordinatesMap[hex.EncodeToString(coordinates1)]
+			namefirst1, namesecond1 := LocationGetName(data, locationID1Str)
+			locationID2Str := (*data).coordinatesMap[hex.EncodeToString(coordinates2)]
+			namefirst2, namesecond2 := LocationGetName(data, locationID2Str)
 
 			//specialTroop68 := false
 			movedTroop := ""
 			troopID := byte(((*data).shuffledTroops)[uint(troopID2)])
 			troopIDSetStr := ""
+			fromStr := ""
 			if troopID2 != troopID {
 				if troopID != 0 {
 					movedTroop = fmt.Sprintf(" (former %d)", troopID)
@@ -289,55 +293,117 @@ func TroopDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) 
 					troopIDSetStr = fmt.Sprintf(" identifier of the troop set to %d,", troopID2)
 				}
 			}
-			changelog = fmt.Sprintf("Modifications for %s troop %d%s at %s:%s", troopKind, i, movedTroop, LocationGetNameStr(namefirst, namesecond), troopIDSetStr)
+			if locationID1Str != locationID2Str && troopID2 == troopID { // Do not print the origin sietch if the troop was already marked as moved.
+				fromStr = fmt.Sprintf(" (from %s)", LocationGetNameStr(namefirst1, namesecond1))
+			}
+			changelog = fmt.Sprintf("Modifications for %s troop %d%s%s at %s:%s", troopKind, i, movedTroop, fromStr, LocationGetNameStr(namefirst2, namesecond2), troopIDSetStr)
 
 			// TODO handle troop 68 more specially.
 
+			if occupation1 < occupation2 {
+				changelog += " occupation changed to Harkonnen,"
+			} else if occupation1 > occupation2 {
+				changelog += " occupation changed to Fremen,"
+			}
+
 			if population1 < population2 {
-				changelog = changelog + fmt.Sprintf(" population increased from %d to %d,", population1, population2)
+				changelog += fmt.Sprintf(" population increased from %d to %d,", population1, population2)
 			} else if population1 > population2 {
-				changelog = changelog + fmt.Sprintf(" population decreased from %d to %d,", population1, population2)
+				changelog += fmt.Sprintf(" population decreased from %d to %d,", population1, population2)
 			}
 
 			if motivation1 < motivation2 {
-				changelog = changelog + fmt.Sprintf(" motivation raised from %d to %d,", motivation1, motivation2)
+				changelog += fmt.Sprintf(" motivation raised from %d to %d,", motivation1, motivation2)
 			} else if motivation1 > motivation2 {
-				changelog = changelog + fmt.Sprintf(" motivation lowered from %d to %d,", motivation1, motivation2)
+				changelog += fmt.Sprintf(" motivation lowered from %d to %d,", motivation1, motivation2)
 			}
 
 			if dissatisfaction1 < dissatisfaction2 {
-				changelog = changelog + fmt.Sprintf(" dissatisfaction increased from %d to %d,", dissatisfaction1, dissatisfaction2)
+				changelog += fmt.Sprintf(" dissatisfaction increased from %d to %d,", dissatisfaction1, dissatisfaction2)
 			} else if dissatisfaction1 > dissatisfaction2 {
-				changelog = changelog + fmt.Sprintf(" dissatisfaction decreased from %d to %d,", dissatisfaction1, dissatisfaction2)
+				changelog += fmt.Sprintf(" dissatisfaction decreased from %d to %d,", dissatisfaction1, dissatisfaction2)
 			}
 
 			if spiceSkill1 < spiceSkill2 {
-				changelog = changelog + fmt.Sprintf(" spice mining skill improved from %d to %d,", spiceSkill1, spiceSkill2)
+				changelog += fmt.Sprintf(" spice mining skill improved from %d to %d,", spiceSkill1, spiceSkill2)
 			} else if spiceSkill1 > spiceSkill2 {
-				changelog = changelog + fmt.Sprintf(" spice mining skill worsened from %d to %d,", spiceSkill1, spiceSkill2)
+				changelog += fmt.Sprintf(" spice mining skill worsened from %d to %d,", spiceSkill1, spiceSkill2)
 			}
 
 			if armySkill1 < armySkill2 {
-				changelog = changelog + fmt.Sprintf(" army skill improved from %d to %d,", armySkill1, armySkill2)
+				changelog += fmt.Sprintf(" army skill improved from %d to %d,", armySkill1, armySkill2)
 			} else if armySkill1 > armySkill2 {
-				changelog = changelog + fmt.Sprintf(" army skill worsened from %d to %d,", armySkill1, armySkill2)
+				changelog += fmt.Sprintf(" army skill worsened from %d to %d,", armySkill1, armySkill2)
 			}
 
 			if ecologySkill1 < ecologySkill2 {
-				changelog = changelog + fmt.Sprintf(" ecology skill improved from %d to %d,", ecologySkill1, ecologySkill2)
+				changelog += fmt.Sprintf(" ecology skill improved from %d to %d,", ecologySkill1, ecologySkill2)
 			} else if ecologySkill1 > ecologySkill2 {
-				changelog = changelog + fmt.Sprintf(" ecology skill worsened from %d to %d,", ecologySkill1, ecologySkill2)
+				changelog += fmt.Sprintf(" ecology skill worsened from %d to %d,", ecologySkill1, ecologySkill2)
 			}
 
-			// TODO equipment
-			// TODO position
-			// TODO etc.
-			// TODO special description.
+			if equipment1 != equipment2 {
+				additionalEquipment := equipment2 & (0xFF ^ equipment1)
+				removedEquipment := equipment1 & (0xFF ^ equipment2)
+				if additionalEquipment != 0 {
+					changelog += " equipment now includes"
+					if additionalEquipment&TROOP_EQUIPMENT_BULB == TROOP_EQUIPMENT_BULB {
+						changelog += " Bulbs,"
+					}
+					if additionalEquipment&TROOP_EQUIPMENT_ORNITHOPTER == TROOP_EQUIPMENT_ORNITHOPTER {
+						changelog += " Ornithopter,"
+					}
+					if additionalEquipment&TROOP_EQUIPMENT_HARVESTER == TROOP_EQUIPMENT_HARVESTER {
+						changelog += " Harvester,"
+					}
+					if additionalEquipment&TROOP_EQUIPMENT_KRYS_KNIVES == TROOP_EQUIPMENT_KRYS_KNIVES {
+						changelog += " Krys knives,"
+					}
+					if additionalEquipment&TROOP_EQUIPMENT_LASER_GUNS == TROOP_EQUIPMENT_LASER_GUNS {
+						changelog += " Laser guns,"
+					}
+					if additionalEquipment&TROOP_EQUIPMENT_WEIRDING_MODULES == TROOP_EQUIPMENT_WEIRDING_MODULES {
+						changelog += " Weirding modules,"
+					}
+					if additionalEquipment&TROOP_EQUIPMENT_ATOMICS == TROOP_EQUIPMENT_ATOMICS {
+						changelog += " Atomics,"
+					}
+				}
+				if removedEquipment != 0 {
+					changelog += " equipment no longer includes"
+					if removedEquipment&TROOP_EQUIPMENT_BULB == TROOP_EQUIPMENT_BULB {
+						changelog += " Bulbs,"
+					}
+					if removedEquipment&TROOP_EQUIPMENT_ORNITHOPTER == TROOP_EQUIPMENT_ORNITHOPTER {
+						changelog += " Ornithopter,"
+					}
+					if removedEquipment&TROOP_EQUIPMENT_HARVESTER == TROOP_EQUIPMENT_HARVESTER {
+						changelog += " Harvester,"
+					}
+					if removedEquipment&TROOP_EQUIPMENT_KRYS_KNIVES == TROOP_EQUIPMENT_KRYS_KNIVES {
+						changelog += " Krys knives,"
+					}
+					if removedEquipment&TROOP_EQUIPMENT_LASER_GUNS == TROOP_EQUIPMENT_LASER_GUNS {
+						changelog += " Laser guns,"
+					}
+					if removedEquipment&TROOP_EQUIPMENT_WEIRDING_MODULES == TROOP_EQUIPMENT_WEIRDING_MODULES {
+						changelog += " Weirding modules,"
+					}
+					if removedEquipment&TROOP_EQUIPMENT_ATOMICS == TROOP_EQUIPMENT_ATOMICS {
+						changelog += " Atomics,"
+					}
+				}
+			}
 
 			// Trim final ","
 			if changelog[len(changelog)-1] == ',' {
 				changelog = changelog[0 : len(changelog)-1]
 				changelog += "."
+			}
+
+			specialDescription := data.specialTroopDescriptions[i]
+			if specialDescription != "" {
+				changelog += specialDescription
 			}
 		}
 
@@ -348,6 +414,9 @@ func TroopDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) 
 }
 
 func TroopDiffAllProduceChangelogEntries(data *DuneMetadata) (string, error) {
+	changelog := `TROOP ADJUSTMENTS:
+
+`
 	changelogHarkonnen := ""
 	changelogFremen := ""
 	for i := uint(TROOP_MIN_ID); i <= TROOP_MAX_ID; i++ {
@@ -357,14 +426,14 @@ func TroopDiffAllProduceChangelogEntries(data *DuneMetadata) (string, error) {
 		}
 		if TroopIsFremen(TroopGetOccupation(data, i)) {
 			if changelogTroop != "" {
-				changelogFremen = changelogFremen + "\n" + changelogTroop + "\n"
+				changelogFremen += "\n" + changelogTroop + "\n"
 			}
 		} else {
 			if changelogTroop != "" {
-				changelogHarkonnen = changelogHarkonnen + "\n" + changelogTroop + "\n"
+				changelogHarkonnen += "\n" + changelogTroop + "\n"
 			}
 		}
 	}
 
-	return changelogHarkonnen + changelogFremen, nil
+	return changelog + changelogHarkonnen + changelogFremen, nil
 }
