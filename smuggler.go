@@ -171,7 +171,7 @@ func SmugglerPrint(data *DuneMetadata, i uint) {
 		krysKnivesPrice := SmugglerGetKrysKnivesPrice(data, i)
 		laserGunsPrice := SmugglerGetLaserGunsPrice(data, i)
 		weirdingModulesPrice := SmugglerGetWeirdingModulesPrice(data, i)
-		fmt.Printf("Smuggler %02x Location: %s Willingness to haggle: %x C: %02x D: %02x\n", i, namestr, willingnessToHaggle, fieldC, fieldD)
+		fmt.Printf("Smuggler %d (%02x) Location: %s Willingness to haggle: %x C: %02x D: %02x\n", i, i, namestr, willingnessToHaggle, fieldC, fieldD)
 		fmt.Printf("\tHarvesters: %02x Ornithopters: %02x Krys knives: %02x Laser guns: %02x Weirding modules: %02x\n", harvesters, ornithopters, krysKnives, laserGuns, weirdingModules)
 		fmt.Printf("\tHarvesters price: %d Ornithopters price: %d Krys knives price: %d Laser guns price: %d Weirding modules price: %d\n", harvestersPrice, ornithoptersPrice, krysKnivesPrice, laserGunsPrice, weirdingModulesPrice)
 		println("NOTE: prices not adjusted yet")

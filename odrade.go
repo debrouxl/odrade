@@ -9,6 +9,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha512"
 	"encoding/hex"
 	"errors"
@@ -36,6 +37,16 @@ const LOCATION_MIN_ID = 1
 const LOCATION_MAX_ID = 70
 const LOCATION_SIZE = 28
 
+const LOCATION_NAME1_MIN_ID = 0x1
+const LOCATION_NAME1_MAX_ID = 0xC
+const LOCATION_NAME2_MIN_ID = 0x1
+const LOCATION_NAME2_MAX_ID = 0xB
+const LOCATION_APPEARANCE_MIN_ID = 0x0
+const LOCATION_APPEARANCE_MAX_ID = 0x30
+const LOCATION_FIELD_MIN_ID = 0x1
+const LOCATION_FIELD_MAX_ID = 0x4C
+const LOCATION_STAGE_MAX = 0x68
+
 const (
 	LOCATION_STATUS_VEGETATION   = 0x01
 	LOCATION_STATUS_IN_BATTLE    = 0x02
@@ -52,7 +63,16 @@ const TROOP_SIZE = 27
 const TROOP_POSITION_TOP_LOCATION_FIRST = 9
 
 const TROOP_OCCUPATION_NOT_HIRED_MASK = 0x80
+const TROOP_OCCUPATION_FREMEN_MINING_SPICE = 0x0
+const TROOP_OCCUPATION_FREMEN_WAITING_FOR_ORDERS = 0x2
 const TROOP_OCCUPATION_HARKONNEN_MINING_SPICE = 0xC
+const TROOP_OCCUPATION_HARKONNEN_PROSPECTING = 0xD
+const TROOP_OCCUPATION_HARKONNEN_WAITING_FOR_ORDERS = 0xE
+const TROOP_OCCUPATION_HARKONNEN_SPICE_MINERS_SEARCHING_FOR_EQUIPMENT = 0xF
+const TROOP_OCCUPATION_HARKONNEN_MILITARIES_SEARCHING_FOR_EQUIPMENT = 0x1F
+const TROOP_OCCUPATION_SPECIAL_FIRST = 0x10
+const TROOP_OCCUPATION_MOVING_FIRST = 0x40
+const TROOP_OCCUPATION_WAS_SLAVED_FIRST = 0xA0
 
 const (
 	TROOP_EQUIPMENT_BULB             = 0x02
@@ -94,11 +114,14 @@ type DuneMetadata struct {
 	specialLocationDescriptions map[uint]string
 	specialNPCDescriptions      map[uint]string
 	specialSmugglerDescriptions map[uint]string
+	housedTroopsInLocations     [][]byte
+	locationForTroops           [TROOP_MAX_ID+1]byte
+	strictChecks                bool
 }
 
 func performInitialSanityCheck(data *DuneMetadata) bool {
 	// We know how large a valid DUNE??S0.SAV file can be.
-	if len((*data).indata) > 9500 && len((*data).indata) < 10000 {
+	if !((*data).strictChecks) || (len((*data).indata) > 9500 && len((*data).indata) < 10000) {
 		if ((*data).indata)[2] == RLE_BYTE && ((*data).indata)[len((*data).indata)-1] != RLE_BYTE {
 			var pos0 uint16 = uint16(((*data).indata)[4]) + 255*uint16(((*data).indata)[5])
 			var expectedPos0 uint16 = uint16(len((*data).indata))
@@ -112,7 +135,7 @@ func performInitialSanityCheck(data *DuneMetadata) bool {
 			case FILE_FORMAT_DUNE37:
 				expectedPos0 = expectedPos0 - 40
 			}
-			if pos0 == expectedPos0 {
+			if !((*data).strictChecks) || pos0 == expectedPos0 {
 				return true
 			} else {
 				fmt.Printf("Error: embedded length bytes %d do not match the expected value %d\n", pos0, expectedPos0)
@@ -129,29 +152,234 @@ func performInitialSanityCheck(data *DuneMetadata) bool {
 func performFinalComputationsAndSanityCheck(data *DuneMetadata) bool {
 	ret := true
 
-	// Make a map for associating 4-byte troop coordinates to location IDs.
+	// Map for associating 4-byte troop coordinates to location IDs.
 	data.coordinatesMap = make(map[string]uint)
+
+	// First pass, location checking part.
 	for i := uint(LOCATION_MIN_ID); i <= LOCATION_MAX_ID; i++ {
+		name1, name2 := LocationGetName(data, i)
+		if name1 < LOCATION_NAME1_MIN_ID || name1 > LOCATION_NAME1_MAX_ID || name2 < LOCATION_NAME2_MIN_ID || name2 > LOCATION_NAME2_MAX_ID {
+			fmt.Printf("Error: location #%d (%X) has invalid name\n", i, i)
+			ret = false
+		}
+
 		coordinates := hex.EncodeToString(LocationGetCoordinates(data, i)[0:4])
 		data.coordinatesMap[coordinates] = i
+
+		appearance := LocationGetAppearance(data, i)
+		if name2 == 0x0A && appearance != 0x21 {
+			fmt.Printf("Error: location #%d (%X) has village name (-Pyons), but the appearance does not match the expected value\n", i, i)
+			ret = false
+		}
+		if appearance > LOCATION_APPEARANCE_MAX_ID {
+			fmt.Printf("Error: location #%d (%X) has improper appearance\n", i, i)
+			ret = false
+		}
+
+		troopID := LocationGetTroopID(data, i)
+		if troopID > TROOP_MAX_ID { // A location can have a troop ID of zero !
+			fmt.Printf("Error: location #%d (%X) has invalid troop ID\n", i, i)
+			ret = false
+		}
+
+		// Build the data structures which enable us to perform more advanced checks on troops and locations.
+		data.housedTroopsInLocations[i][0] = troopID
+		if troopID != 0 {
+			locationForThisTroop := data.locationForTroops[troopID]
+			if locationForThisTroop != 0 {
+				// No troop should appear twice in the list of housed troops.
+				// This check should also prevent loops in the troop chain (which send the game into an infinite loop - checked).
+				fmt.Printf("Error: troop ID #%d (%X) declared housed at location #%d (%X) was already housed at location #%d (%X)\n", troopID, troopID, i, i, locationForThisTroop, locationForThisTroop)
+				ret = false
+			}
+			data.locationForTroops[troopID] = byte(i)
+			coordinates2 := hex.EncodeToString(TroopGetCoordinates(data, uint(troopID)))
+			if coordinates != coordinates2 {
+				fmt.Printf("Error: housed troop ID #%d (%X) coordinates do not match location #%d (%X) coordinates\n", troopID, troopID, i, i)
+				ret = false
+			}
+		}
+
+		status := LocationGetStatus(data, i)
+		if status & 0xC != 0 {
+			fmt.Printf("Warning: location #%d (%X) has undocumented status flags\n", i, i)
+		}
+
+		stage := LocationGetStage(data, i)
+		if stage[0] > LOCATION_STAGE_MAX && stage[0] != 0xFF {
+			fmt.Printf("Warning: location #%d (%X) has weird stage value, chances are that it won't be discoverable through travel\n", i, i)
+		}
+
+		fieldID := LocationGetFieldID(data, i)
+		if fieldID < LOCATION_FIELD_MIN_ID || fieldID > LOCATION_FIELD_MAX_ID {
+			fmt.Printf("Error: location #%d (%X) has invalid spice field ID\n", i, i)
+			ret = false
+		}
+
+		// No possible sanity check on spice amount, spice density.
+
+		fieldJ := LocationGetFieldJ(data, i)
+		if fieldJ != 0x00 {
+			fmt.Printf("Warning: location #%d (%X) has weird field J\n", i, i)
+		}
+
+		// No possible / desirable sanity check on harvesters, ornithopters, krys knives, laser guns, weirding modules, atomics, bulbs, water.
 	}
 
+	// First pass, troop checking part.
+	positionsMask := make([]uint16, LOCATION_MAX_ID+1)
+	eightzeros := make([]byte, 8)
 	for i := uint(TROOP_MIN_ID); i <= TROOP_MAX_ID; i++ {
-		if TroopGetOccupation(data, i) == TROOP_OCCUPATION_HARKONNEN_MINING_SPICE|TROOP_OCCUPATION_NOT_HIRED_MASK && TroopGetPosition(data, i) < TROOP_POSITION_TOP_LOCATION_FIRST && i != 67 {
-			fmt.Printf("Warning: troop #%d is Harkonnen but has improper position\n", i)
+		troopID := TroopGetTroopID(data, i)
+		if i == 68 && troopID == 0 {
+			continue // Assume vanilla Dune and skip this entry.
+		}
+		if troopID != byte(i) {
+			fmt.Printf("Error: troop #%d (%X) has invalid troop ID\n", i, i)
 			ret = false
 		}
-		if TroopGetOccupation(data, i) != TROOP_OCCUPATION_HARKONNEN_MINING_SPICE|TROOP_OCCUPATION_NOT_HIRED_MASK && TroopGetPosition(data, i) >= TROOP_POSITION_TOP_LOCATION_FIRST {
-			fmt.Printf("Warning: troop #%d is Fremen but has improper position\n", i)
+
+		nextTroopID := TroopGetNextTroopID(data, i)
+		if nextTroopID > TROOP_MAX_ID { // A next troop ID of zero is valid !
+			fmt.Printf("Error: troop #%d (%X) has invalid next troop ID\n", i, i)
 			ret = false
 		}
+		locationForThisTroop := data.locationForTroops[i]
+		locationForNextTroop := data.locationForTroops[nextTroopID]
+		if nextTroopID != 0 && locationForNextTroop != 0 {
+			fmt.Printf("Error: troop #%d (%X) is already part of another location\n", nextTroopID, nextTroopID)
+			ret = false
+		}
+		data.locationForTroops[nextTroopID] = locationForThisTroop
+		// The location for the first troop was already filled in above when indexing the locations.
+		if nextTroopID != 0 {
+			data.housedTroopsInLocations[locationForThisTroop] = append(data.housedTroopsInLocations[locationForThisTroop], nextTroopID)
+		}
+
+		troopPosition := TroopGetPosition(data, i)
+		troopOccupation := TroopGetOccupation(data, i)
+		fieldG := TroopGetFieldG(data, i)
+		if troopOccupation < TROOP_OCCUPATION_SPECIAL_FIRST || (troopOccupation >= TROOP_OCCUPATION_NOT_HIRED_MASK && troopOccupation < TROOP_OCCUPATION_NOT_HIRED_MASK + TROOP_OCCUPATION_SPECIAL_FIRST) { // 0x00-0xF, 0x80-0x8F
+			troopOccupation &= 0xFF ^ TROOP_OCCUPATION_NOT_HIRED_MASK
+			if troopOccupation == TROOP_OCCUPATION_HARKONNEN_MINING_SPICE {
+				if troopPosition < TROOP_POSITION_TOP_LOCATION_FIRST && i != 67 { // Arrakeen (Harkonnen) palace troop
+					fmt.Printf("Error: troop #%d (%X) is Harkonnen but has improper position\n", i, i)
+					ret = false
+				}
+				if bytes.Compare(fieldG, eightzeros) == 0 {
+					fmt.Printf("Error: troop #%d (%X) is Harkonnen but has all zeros in field G\n", i, i)
+					ret = false
+				}
+			} else if troopOccupation == TROOP_OCCUPATION_HARKONNEN_PROSPECTING || troopOccupation == TROOP_OCCUPATION_HARKONNEN_WAITING_FOR_ORDERS || troopOccupation == TROOP_OCCUPATION_HARKONNEN_SPICE_MINERS_SEARCHING_FOR_EQUIPMENT || troopOccupation == TROOP_OCCUPATION_HARKONNEN_MILITARIES_SEARCHING_FOR_EQUIPMENT {
+				fmt.Printf("Error: troop #%d (%X) is Harkonnen but has weird occupation\n", i, i)
+				ret = false
+			} else if troopOccupation == TROOP_OCCUPATION_FREMEN_MINING_SPICE || troopOccupation == TROOP_OCCUPATION_FREMEN_WAITING_FOR_ORDERS {
+				if troopPosition >= TROOP_POSITION_TOP_LOCATION_FIRST {
+					fmt.Printf("Error: troop #%d (%X) is Fremen but has improper position\n", i, i)
+					ret = false
+				}
+				if bytes.Compare(fieldG, eightzeros) != 0 {
+					fmt.Printf("Error: troop #%d (%X) is Fremen but has all some nonzero bytes in field G\n", i, i)
+					ret = false
+				}
+			} else {
+				fmt.Printf("Warning: troop #%d (%X) is Fremen but has weird occupation\n", i, i)
+			}
+		} else {
+			// 0x10-0x1F, 0x20-0x2F, 0x30-0x3F: special occupations (job finished, captured, etc.)
+			// 0x40-0x7F: troop moving.
+			// 0x90-0x9F: "not yet hired" version of 0x10-0x1F.
+			// 0xA0-0xFF: Fremen complaining about slaving.
+			fmt.Printf("Error: troop #%d (%X) has weird occupation\n", i, i)
+			ret = false
+		}
+
+		// No possible check on dissatisfaction ?
+
+		speech := TroopGetSpeech(data, i)
+		if speech != 0 {
+			fmt.Printf("Note: troop #%d (%X) has nonzero speech\n", i, i)
+		}
+
+		fieldJ := TroopGetFieldJ(data, i)
+		if fieldJ != 0x00 {
+			fmt.Printf("Warning: troop #%d (%X) has weird field J\n", i, i)
+		}
+
+		motivation := TroopGetMotivation(data, i)
+		if motivation > 254 {
+			fmt.Printf("Warning: troop #%d (%X) has excessive motivation\n", i, i)
+		}
+
+		spiceMiningSkill := TroopGetSpiceMiningSkill(data, i)
+		if spiceMiningSkill > 100 {
+			fmt.Printf("Warning: troop #%d (%X) has excessive spice mining skill\n", i, i)
+		}
+
+		armySkill := TroopGetArmySkill(data, i)
+		if armySkill > 207 {
+			fmt.Printf("Warning: troop #%d (%X) has excessive army skill, which can cause undesirable effects in battles\n", i, i)
+		}
+
+		ecologySkill := TroopGetEcologySkill(data, i)
+		if ecologySkill > 100 {
+			fmt.Printf("Warning: troop #%d (%X) has excessive ecology skill\n", i, i)
+		}
+
+		// No possible check on troop equipment ?
+
+		population := TroopGetPopulation(data, i)
+		if population < 300 && i != 67 { // Arrakeen (Harkonnen) palace troop
+			fmt.Printf("Warning: troop #%d (%X) has very low population\n", i, i)
+		}
+
 		coordinates := hex.EncodeToString(TroopGetCoordinates(data, i))
 		locationIdx := data.coordinatesMap[coordinates]
 		if locationIdx == 0 {
-			fmt.Printf("Error: troop #%d has coordinates not referenced in the locations array\n", i)
+			fmt.Printf("Warning: troop #%d (%X) has coordinates not referenced in the locations array\n", i, i)
+			//ret = false
+		}
+		if positionsMask[locationIdx]&(1<<troopPosition) != 0 {
+			fmt.Printf("Error: troop #%d (%X) has the same position in location as another troop\n", i, i)
 			ret = false
 		}
+		positionsMask[locationIdx] |= (1 << troopPosition)
 	}
+
+	// Second pass.
+	/*println("locationForTroops")
+	for i := uint(TROOP_MIN_ID); i <= TROOP_MAX_ID; i++ {
+		fmt.Printf("Troop #%d (%X): %x\n", i, i, data.locationForTroops[i])
+	}*/
+	//println("housedTroopsInLocations")
+	for i := uint(LOCATION_MIN_ID); i <= LOCATION_MAX_ID; i++ {
+		//fmt.Printf("Location #%d (%X) (len %d): %x\n", i, i, len(data.housedTroopsInLocations[i]), data.housedTroopsInLocations[i])
+
+		// Complain if there are any locations where there are both Fremen and Harkonnen troops;
+		// TODO All troops at the same location should have the same value for field E, shouldn't they ?
+		// TODO All troops at the same location should have the same coordinates.
+		// TODO Check the index and the list wrt. the position: first troop should be at 1 or 9, second troop at 2 or A, etc.
+		foundFremenTroops := false
+		foundHarkonnenTroops := false
+		position := 1
+		for j := 0; j < len(data.housedTroopsInLocations[i]); j++ {
+			troopOccupation := TroopGetOccupation(data, uint(data.housedTroopsInLocations[i][j])) & (0xFF ^ TROOP_OCCUPATION_NOT_HIRED_MASK);
+			if troopOccupation == TROOP_OCCUPATION_HARKONNEN_MINING_SPICE {
+				foundHarkonnenTroops = true;
+			} else {
+				// Other values were filtered previously.
+				foundFremenTroops = true
+			}
+			position++
+		}
+		if foundFremenTroops && foundHarkonnenTroops {
+			fmt.Printf("Location #%d (%X) has a mix of Fremen and Harkonnen troops, that shouldn't happen\n", i, i)
+			ret = false;
+		}
+
+	}
+
+
 	return ret
 }
 
@@ -327,16 +555,16 @@ func main() {
 	}
 
 	var fileFormat uint = FILE_FORMAT_NONE
-	if strings.HasSuffix(os.Args[2], "DUNE21S0.SAV") {
+	if strings.Contains(os.Args[2], "DUNE21S") {
 		println("Probably targeting DUNE21")
 		fileFormat = FILE_FORMAT_DUNE21
-	} else if strings.HasSuffix(os.Args[2], "DUNE23S0.SAV") {
+	} else if strings.Contains(os.Args[2], "DUNE23S") {
 		println("Probably targeting DUNE23")
 		fileFormat = FILE_FORMAT_DUNE23
-	} else if strings.HasSuffix(os.Args[2], "DUNE24S0.SAV") {
+	} else if strings.Contains(os.Args[2], "DUNE24S") {
 		println("Probably targeting DUNE24")
 		fileFormat = FILE_FORMAT_DUNE24
-	} else if strings.HasSuffix(os.Args[2], "DUNE37S0.SAV") {
+	} else if strings.Contains(os.Args[2], "DUNE37S") {
 		println("Probably targeting DUNE37 (CD version)")
 		fileFormat = FILE_FORMAT_DUNE37
 	}
@@ -348,6 +576,7 @@ func main() {
 	}*/
 
 	data.format = fileFormat
+	data.strictChecks = true
 
 	// If users want to DoS their computers by feeding a large file into this program... too bad for them ?
 	data.indata, err = os.ReadFile(os.Args[2])
@@ -403,6 +632,10 @@ func main() {
 		data.specialLocationDescriptions = make(map[uint]string)
 		data.specialNPCDescriptions = make(map[uint]string)
 		data.specialSmugglerDescriptions = make(map[uint]string)
+		data.housedTroopsInLocations = make([][]byte, LOCATION_MAX_ID+1)
+		for i := uint(LOCATION_MIN_ID); i <= LOCATION_MAX_ID; i++ {
+			data.housedTroopsInLocations[i] = make([]byte, 1)
+		}
 
 		// Modify data inside a function located into another file - that's how the set of modifications can be selected.
 		err = ModifyTroopAndLocationData(&data)
@@ -432,16 +665,6 @@ func main() {
 
 		// Changelog generation... here we go :)
 		data.changelog, err = ChangelogPrologue()
-
-		// TODO for changelog generation:
-		// * troop diff: traversing locations in ascending order, print Harkonnen troops diff, then Fremen troops diff
-		// It is probably interesting to build up a troop shuffle map, and may be interesting to build up a locations map.
-		// * locations diff: traversing locations in ascending order
-		// * NPCs diff.
-		// * smugglers diff.
-		/*for i := uint(LOCATION_MIN_ID); i <= LOCATION_MAX_ID; i++ {
-			LocationPrint(&data, i)
-		}*/
 
 		changelogTroops, err := TroopDiffAllProduceChangelogEntries(&data)
 		if err != nil {

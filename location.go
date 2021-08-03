@@ -67,8 +67,6 @@ func LocationGetNameStr(first byte, second byte) string {
 		str += "-Pyons"
 	case 0x0b:
 		str += "-Pyort"
-	case 0x0c:
-		str += "-Celimyn"
 	}
 
 	return str
@@ -230,7 +228,7 @@ func LocationPrint(data *DuneMetadata, i uint) {
 		atomics := LocationGetAtomics(data, i)
 		bulbs := LocationGetBulbs(data, i)
 		water := LocationGetWater(data, i)
-		fmt.Printf("Location %02x Name: %s Coordinates: %x\n", i, namestr, coordinates)
+		fmt.Printf("Location %d (%02x) Name: %s Coordinates: %x\n", i, i, namestr, coordinates)
 		fmt.Printf("\tAppearance: %02x Troop ID: %02x Status: %02x Stage: %x\n\tSpice field ID: %02x Spice amount: %02x Spice density: %02x J: %02x\n", appearance, troopID, status, stage, spiceFieldID, spiceAmount, spiceDensity, fieldJ)
 		fmt.Printf("\tHarvesters: %02x Ornithopters: %02x Krys knives: %02x Laser guns: %02x Weirding modules: %02x Atomics: %02x Bulbs: %02x Water: %02x\n", harvesters, ornithopters, krysKnives, laserGuns, weirdingModules, atomics, bulbs, water)
 	}
@@ -287,79 +285,79 @@ func LocationDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, erro
 			changelog = LocationGetNameStr(namefirst2, namesecond2) + ":"
 
 			if troopID1 != troopID2 {
-				changelog += fmt.Sprintf(" switched housed troop ID from %d to %d,", troopID1, troopID2)
+				changelog += fmt.Sprintf(" switched housed troop ID from %d (%X) to %d (%X),", troopID1, troopID1, troopID2, troopID2)
 			}
 
 			if appearance1 != appearance2 {
-				changelog += fmt.Sprintf(" changed appearance type from %d to %d,", appearance1, appearance2)
+				changelog += fmt.Sprintf(" changed appearance type from %d (%X) to %d (%X),", appearance1, appearance1, appearance2, appearance2)
 			}
 
 			if status1 != status2 {
-				changelog += fmt.Sprintf(" changed status from %d to %d,", status1, status2)
+				changelog += fmt.Sprintf(" changed status from %d (%X) to %d (%X),", status1, status1, status2, status2)
 			}
 
 			if spiceDensity1 < spiceDensity2 {
-				changelog += fmt.Sprintf(" scaled up the spice density from %d to %d,", spiceDensity1, spiceDensity2)
+				changelog += fmt.Sprintf(" scaled up the spice density from %d (%X) to %d (%X),", spiceDensity1, spiceDensity1, spiceDensity2, spiceDensity2)
 			} else if spiceDensity1 > spiceDensity2 {
-				changelog += fmt.Sprintf(" scaled down the spice density from %d to %d,", spiceDensity1, spiceDensity2)
+				changelog += fmt.Sprintf(" scaled down the spice density from %d (%X) to %d (%X),", spiceDensity1, spiceDensity1, spiceDensity2, spiceDensity2)
 			}
 
 			if spiceAmount1 < spiceAmount2 {
-				changelog += fmt.Sprintf(" raised the amount of spice from %d to %d,", spiceAmount1, spiceAmount2)
+				changelog += fmt.Sprintf(" raised the amount of spice from %d (%X) to %d (%X),", spiceAmount1, spiceAmount1, spiceAmount2, spiceAmount2)
 			} else if spiceAmount1 > spiceAmount2 {
-				changelog += fmt.Sprintf(" lowered the amount of spice from %d to %d,", spiceAmount1, spiceAmount2)
+				changelog += fmt.Sprintf(" lowered the amount of spice from %d (%X) to %d (%X),", spiceAmount1, spiceAmount1, spiceAmount2, spiceAmount2)
 			}
 
 			if harvesters1 < harvesters2 {
-				changelog += fmt.Sprintf(" increased the number of harvesters from %d to %d,", harvesters1, harvesters2)
+				changelog += fmt.Sprintf(" increased the number of harvesters from %d (%X) to %d (%X),", harvesters1, harvesters1, harvesters2, harvesters2)
 			} else if harvesters1 > harvesters2 {
-				changelog += fmt.Sprintf(" decreased the number of harvesters from %d to %d,", harvesters1, harvesters2)
+				changelog += fmt.Sprintf(" decreased the number of harvesters from %d (%X) to %d (%X),", harvesters1, harvesters1, harvesters2, harvesters2)
 			}
 
 			if ornithopters1 < ornithopters2 {
-				changelog += fmt.Sprintf(" increased the number of ornithopters from %d to %d,", ornithopters1, ornithopters2)
+				changelog += fmt.Sprintf(" increased the number of ornithopters from %d (%X) to %d (%X),", ornithopters1, ornithopters1, ornithopters2, ornithopters2)
 			} else if ornithopters1 > ornithopters2 {
-				changelog += fmt.Sprintf(" decreased the number of ornithopters from %d to %d,", ornithopters1, ornithopters2)
+				changelog += fmt.Sprintf(" decreased the number of ornithopters from %d (%X) to %d (%X),", ornithopters1, ornithopters1, ornithopters2, ornithopters2)
 			}
 
 			if krysKnives1 < krysKnives2 {
-				changelog += fmt.Sprintf(" increased the number of krys knives from %d to %d,", krysKnives1, krysKnives2)
+				changelog += fmt.Sprintf(" increased the number of krys knives from %d (%X) to %d (%X),", krysKnives1, krysKnives1, krysKnives2, krysKnives2)
 			} else if krysKnives1 > krysKnives2 {
-				changelog += fmt.Sprintf(" decreased the number of krys knives from %d to %d,", krysKnives1, krysKnives2)
+				changelog += fmt.Sprintf(" decreased the number of krys knives from %d (%X) to %d (%X),", krysKnives1, krysKnives1, krysKnives2, krysKnives2)
 			}
 
 			if laserGuns1 < laserGuns2 {
-				changelog += fmt.Sprintf(" increased the number of laser guns from %d to %d,", laserGuns1, laserGuns2)
+				changelog += fmt.Sprintf(" increased the number of laser guns from %d (%X) to %d (%X),", laserGuns1, laserGuns1, laserGuns2, laserGuns2)
 			} else if laserGuns1 > laserGuns2 {
-				changelog += fmt.Sprintf(" decreased the number of laser guns from %d to %d,", laserGuns1, laserGuns2)
+				changelog += fmt.Sprintf(" decreased the number of laser guns from %d (%X) to %d (%X),", laserGuns1, laserGuns1, laserGuns2, laserGuns2)
 			}
 
 			if weirdingModules1 < weirdingModules2 {
-				changelog += fmt.Sprintf(" increased the number of weirding modules from %d to %d,", weirdingModules1, weirdingModules2)
+				changelog += fmt.Sprintf(" increased the number of weirding modules from %d (%X) to %d (%X),", weirdingModules1, weirdingModules1, weirdingModules2, weirdingModules2)
 			} else if weirdingModules1 > weirdingModules2 {
-				changelog += fmt.Sprintf(" decreased the number of weirding modules from %d to %d,", weirdingModules1, weirdingModules2)
+				changelog += fmt.Sprintf(" decreased the number of weirding modules from %d (%X) to %d (%X),", weirdingModules1, weirdingModules1, weirdingModules2, weirdingModules2)
 			}
 
 			if atomics1 < atomics2 {
-				changelog += fmt.Sprintf(" increased the number of atomics from %d to %d,", atomics1, atomics2)
+				changelog += fmt.Sprintf(" increased the number of atomics from %d (%X) to %d (%X),", atomics1, atomics1, atomics2, atomics2)
 			} else if atomics1 > atomics2 {
-				changelog += fmt.Sprintf(" decreased the number of atomics from %d to %d,", atomics1, atomics2)
+				changelog += fmt.Sprintf(" decreased the number of atomics from %d (%X) to %d (%X),", atomics1, atomics1, atomics2, atomics2)
 			}
 
 			if bulbs1 < bulbs2 {
-				changelog += fmt.Sprintf(" increased the number of bulbs from %d to %d,", bulbs1, bulbs2)
+				changelog += fmt.Sprintf(" increased the number of bulbs from %d (%X) to %d (%X),", bulbs1, bulbs1, bulbs2, bulbs2)
 			} else if bulbs1 > bulbs2 {
-				changelog += fmt.Sprintf(" decreased the number of bulbs from %d to %d,", bulbs1, bulbs2)
+				changelog += fmt.Sprintf(" decreased the number of bulbs from %d (%X) to %d (%X),", bulbs1, bulbs1, bulbs2, bulbs2)
 			}
 
 			if water1 < water2 {
-				changelog += fmt.Sprintf(" expanded the amount of water from %d to %d,", water1, water2)
+				changelog += fmt.Sprintf(" expanded the amount of water from %d (%X) to %d (%X),", water1, water1, water2, water2)
 			} else if water1 > water2 {
-				changelog += fmt.Sprintf(" drained the amount of water from %d to %d,", water1, water2)
+				changelog += fmt.Sprintf(" drained the amount of water from %d (%X) to %d (%X),", water1, water1, water2, water2)
 			}
 
 			if !bytes.Equal(stage1, stage2) {
-				changelog += fmt.Sprintf(" changed game stage for finding it from %d to %d,", stage1[0], stage2[0])
+				changelog += fmt.Sprintf(" changed game stage for finding it from %d (%X) to %d (%X),", stage1[0], stage1[0], stage2[0], stage2[0])
 			}
 
 			// Trim final ","

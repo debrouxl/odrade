@@ -132,7 +132,7 @@ func NPCPrint(data *DuneMetadata, i uint) {
 		exactPlace := NPCGetExactPlace(data, i)
 		forDialogue := NPCGetForDialogue(data, i)
 		fieldH := NPCGetFieldH(data, i)
-		fmt.Printf("NPC %02x Sprite identificator: %x B: %x\n", i, spriteIdentificator, fieldB)
+		fmt.Printf("NPC %d (%02x) Sprite identificator: %x B: %x\n", i, i, spriteIdentificator, fieldB)
 		fmt.Printf("\tRoom location: %02x Type of place: %02x E: %02x Exact place: %02x For dialogue: %02x H: %02x\n", roomLocation, typeOfPlace, fieldE, exactPlace, forDialogue, fieldH)
 	}
 }
@@ -167,28 +167,28 @@ func NPCDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) {
 			changelog = NPCGetNameStr(i) + ":"
 
 			if spriteIdentificator1 != spriteIdentificator2 {
-				changelog += fmt.Sprintf(" sprite identificator changed from %d to %d,", spriteIdentificator1, spriteIdentificator2)
+				changelog += fmt.Sprintf(" sprite identificator changed from %d (%X) to %d (%X),", spriteIdentificator1, spriteIdentificator1, spriteIdentificator2, spriteIdentificator2)
 			}
 			if fieldB1 != fieldB2 {
-				changelog += fmt.Sprintf(" B changed from %d to %d,", fieldB1, fieldB2)
+				changelog += fmt.Sprintf(" B changed from %d (%X) to %d (%X),", fieldB1, fieldB1, fieldB2, fieldB2)
 			}
 			if roomLocation1 != roomLocation2 {
-				changelog += fmt.Sprintf(" room location changed from %d to %d,", roomLocation1, roomLocation2)
+				changelog += fmt.Sprintf(" room location changed from %d (%X) to %d (%X),", roomLocation1, roomLocation1, roomLocation2, roomLocation2)
 			}
 			if typeOfPlace1 != typeOfPlace2 {
-				changelog += fmt.Sprintf(" type of place changed from %d to %d,", typeOfPlace1, typeOfPlace2)
+				changelog += fmt.Sprintf(" type of place changed from %d (%X) to %d (%X),", typeOfPlace1, typeOfPlace1, typeOfPlace2, typeOfPlace2)
 			}
 			if fieldE1 != fieldE2 {
-				changelog += fmt.Sprintf(" E changed from %d to %d,", fieldE1, fieldE2)
+				changelog += fmt.Sprintf(" E changed from %d (%X) to %d (%X),", fieldE1, fieldE1, fieldE2, fieldE2)
 			}
 			if exactPlace1 != exactPlace2 {
-				changelog += fmt.Sprintf(" exact place changed from %d to %d,", exactPlace1, exactPlace2)
+				changelog += fmt.Sprintf(" exact place changed from %d (%X) to %d (%X),", exactPlace1, exactPlace1, exactPlace2, exactPlace2)
 			}
 			if forDialogue1 != forDialogue2 {
-				changelog += fmt.Sprintf(" for dialogue changed from %d to %d,", forDialogue1, forDialogue2)
+				changelog += fmt.Sprintf(" for dialogue changed from %d (%X) to %d (%X),", forDialogue1, forDialogue1, forDialogue2, forDialogue2)
 			}
 			if fieldH1 != fieldH2 {
-				changelog += fmt.Sprintf(" H changed from %d to %d,", fieldH1, fieldH2)
+				changelog += fmt.Sprintf(" H changed from from %d (%X) to %d (%X),", fieldH1, fieldH1, fieldH2, fieldH2)
 			}
 
 			// Trim final ","

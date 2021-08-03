@@ -206,9 +206,9 @@ func TroopPrint(data *DuneMetadata, i uint) {
 		ecologySkill := TroopGetEcologySkill(data, i)
 		equipment := TroopGetEquipment(data, i)
 		population := TroopGetPopulation(data, i)
-		fmt.Printf("Troop %02x Troop ID: %02x Next Troop ID: %02x Position: %02x Occupation: %02x\n", i, troopID, nextTroopID, position, occupation)
-		fmt.Printf("\tE: %04x Coordinates: %x G: %x Dissatisfaction: %02x Speech: %02x J: %02x\n", fieldE, coordinates, fieldG, dissatisfaction, speech, fieldJ)
-		fmt.Printf("\tMotivation: %02x Spice skill: %02x Army skill: %02x Ecology skill: %02x Equipment: %02x Population: %02d\n", motivation, spiceSkill, armySkill, ecologySkill, equipment, population)
+		fmt.Printf("Troop %d (%X) Troop ID: %02X Next Troop ID: %02X Position: %02X Occupation: %02X\n", i, i, troopID, nextTroopID, position, occupation)
+		fmt.Printf("\tE: %04X Coordinates: %X G: %X Dissatisfaction: %02X Speech: %02X J: %02X\n", fieldE, coordinates, fieldG, dissatisfaction, speech, fieldJ)
+		fmt.Printf("\tMotivation: %02X Spice skill: %02X Army skill: %02X Ecology skill: %02X Equipment: %02X Population: %02d (%02X)\n", motivation, spiceSkill, armySkill, ecologySkill, equipment, population, population)
 	}
 }
 
@@ -286,7 +286,7 @@ func TroopDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) 
 			if troopID2 != troopID {
 				if troopID != 0 {
 					movedTroop = fmt.Sprintf(" (former %d)", troopID)
-					troopIDSetStr = fmt.Sprintf(" identifier of the troop changed to %d,", troopID2)
+					troopIDSetStr = fmt.Sprintf(" identifier of the troop changed to %d (%X),", troopID2, troopID2)
 				} else {
 					//specialTroop68 = true
 					movedTroop = " (new troop, special)"
@@ -296,7 +296,7 @@ func TroopDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) 
 			if locationID1Str != locationID2Str && troopID2 == troopID { // Do not print the origin sietch if the troop was already marked as moved.
 				fromStr = fmt.Sprintf(" (from %s)", LocationGetNameStr(namefirst1, namesecond1))
 			}
-			changelog = fmt.Sprintf("Modifications for %s troop %d%s%s at %s:%s", troopKind, i, movedTroop, fromStr, LocationGetNameStr(namefirst2, namesecond2), troopIDSetStr)
+			changelog = fmt.Sprintf("Modifications for %s troop %d (%X)%s%s at %s:%s", troopKind, i, i, movedTroop, fromStr, LocationGetNameStr(namefirst2, namesecond2), troopIDSetStr)
 
 			// TODO handle troop 68 more specially.
 
@@ -307,39 +307,39 @@ func TroopDiffProduceChangelogEntry(data *DuneMetadata, i uint) (string, error) 
 			}
 
 			if population1 < population2 {
-				changelog += fmt.Sprintf(" population increased from %d to %d,", population1, population2)
+				changelog += fmt.Sprintf(" population increased from %d (%X) to %d (%X),", population1, population1 / 10, population2, population2 / 10)
 			} else if population1 > population2 {
-				changelog += fmt.Sprintf(" population decreased from %d to %d,", population1, population2)
+				changelog += fmt.Sprintf(" population decreased from %d (%X) to %d (%X),", population1, population1 / 10, population2, population2 / 10)
 			}
 
 			if motivation1 < motivation2 {
-				changelog += fmt.Sprintf(" motivation raised from %d to %d,", motivation1, motivation2)
+				changelog += fmt.Sprintf(" motivation raised from %d (%X) to %d (%X),", motivation1, motivation1, motivation2, motivation2)
 			} else if motivation1 > motivation2 {
-				changelog += fmt.Sprintf(" motivation lowered from %d to %d,", motivation1, motivation2)
+				changelog += fmt.Sprintf(" motivation lowered from %d (%X) to %d (%X),", motivation1, motivation1, motivation2, motivation2)
 			}
 
 			if dissatisfaction1 < dissatisfaction2 {
-				changelog += fmt.Sprintf(" dissatisfaction increased from %d to %d,", dissatisfaction1, dissatisfaction2)
+				changelog += fmt.Sprintf(" dissatisfaction increased from %d (%X) to %d (%X),", dissatisfaction1, dissatisfaction1, dissatisfaction2, dissatisfaction2)
 			} else if dissatisfaction1 > dissatisfaction2 {
-				changelog += fmt.Sprintf(" dissatisfaction decreased from %d to %d,", dissatisfaction1, dissatisfaction2)
+				changelog += fmt.Sprintf(" dissatisfaction decreased from %d (%X) to %d (%X),", dissatisfaction1, dissatisfaction1, dissatisfaction2, dissatisfaction2)
 			}
 
 			if spiceSkill1 < spiceSkill2 {
-				changelog += fmt.Sprintf(" spice mining skill improved from %d to %d,", spiceSkill1, spiceSkill2)
+				changelog += fmt.Sprintf(" spice mining skill improved from %d (%X) to %d (%X),", spiceSkill1, spiceSkill1, spiceSkill2, spiceSkill2)
 			} else if spiceSkill1 > spiceSkill2 {
-				changelog += fmt.Sprintf(" spice mining skill worsened from %d to %d,", spiceSkill1, spiceSkill2)
+				changelog += fmt.Sprintf(" spice mining skill worsened from %d (%X) to %d (%X),", spiceSkill1, spiceSkill1, spiceSkill2, spiceSkill2)
 			}
 
 			if armySkill1 < armySkill2 {
-				changelog += fmt.Sprintf(" army skill improved from %d to %d,", armySkill1, armySkill2)
+				changelog += fmt.Sprintf(" army skill improved from %d (%X) to %d (%X),", armySkill1, armySkill1, armySkill2, armySkill2)
 			} else if armySkill1 > armySkill2 {
-				changelog += fmt.Sprintf(" army skill worsened from %d to %d,", armySkill1, armySkill2)
+				changelog += fmt.Sprintf(" army skill worsened from %d (%X) to %d (%X),", armySkill1, armySkill1, armySkill2, armySkill2)
 			}
 
 			if ecologySkill1 < ecologySkill2 {
-				changelog += fmt.Sprintf(" ecology skill improved from %d to %d,", ecologySkill1, ecologySkill2)
+				changelog += fmt.Sprintf(" ecology skill improved from %d (%X) to %d (%X),", ecologySkill1, ecologySkill1, ecologySkill2, ecologySkill2)
 			} else if ecologySkill1 > ecologySkill2 {
-				changelog += fmt.Sprintf(" ecology skill worsened from %d to %d,", ecologySkill1, ecologySkill2)
+				changelog += fmt.Sprintf(" ecology skill worsened from %d (%X) to %d (%X),", ecologySkill1, ecologySkill1, ecologySkill2, ecologySkill2)
 			}
 
 			if equipment1 != equipment2 {
