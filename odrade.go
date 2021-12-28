@@ -24,6 +24,7 @@ const (
 	FILE_FORMAT_DUNE23 = 2
 	FILE_FORMAT_DUNE24 = 3
 	FILE_FORMAT_DUNE37 = 4
+	FILE_FORMAT_DUNE38 = 5
 )
 
 const (
@@ -132,7 +133,7 @@ func performInitialSanityCheck(data *DuneMetadata) bool {
 				expectedPos0 = expectedPos0 - 39
 			case FILE_FORMAT_DUNE24:
 				expectedPos0 = expectedPos0 - 39
-			case FILE_FORMAT_DUNE37:
+			case FILE_FORMAT_DUNE37, FILE_FORMAT_DUNE38:
 				expectedPos0 = expectedPos0 - 40
 			}
 			if !((*data).strictChecks) || pos0 == expectedPos0 {
@@ -409,7 +410,7 @@ func GetOffsets(mode uint) (uint, uint, uint, uint, uint, uint) {
 		troopsOffset = 0x4C83
 		npcsOffset = 0x53AF
 		smugglersOffset = 0x54B1
-	case FILE_FORMAT_DUNE37:
+	case FILE_FORMAT_DUNE37, FILE_FORMAT_DUNE38:
 		timeCountersOffset = 0x441F
 		locationsOffset = 0x451F
 		troopsOffset = 0x4CC9
@@ -437,6 +438,8 @@ func checkSupportedVersion(data *DuneMetadata) error {
 		knownvalue = "b8d0657c9f4f4fa7c15d15ec92111bba3a2de68630d7a39bb562603a7a1eedf171c81968cac61e63ce70cfcbd7cb7444ec0d417dd3d0a54a000b19d2619a73ba"
 	case FILE_FORMAT_DUNE37:
 		knownvalue = "4f1ba16132e9f9f374954d1084ca89f9dbc78221fa4399ec31493938edc53a004f73f49543fc7c1585124a9d7b090fc6fd93bb5e9093f847dd4a4e809aa9b1b8"
+	case FILE_FORMAT_DUNE38:
+		knownvalue = "b609978c82db021dc701d5a2b3e0ca3dbf2bf4b2d5820344151cd52736c534fa35ca2ef9d7bda0740b7c85798e7fde2ce8a8cb451ccbcc51670d28c5a5b2ce7a"
 	}
 
 	//println(valueStr)
@@ -562,11 +565,14 @@ func main() {
 		println("Probably targeting DUNE23")
 		fileFormat = FILE_FORMAT_DUNE23
 	} else if strings.Contains(os.Args[2], "DUNE24S") {
-		println("Probably targeting DUNE24")
+		println("Probably targeting DUNE24 (uncommon floppy version)")
 		fileFormat = FILE_FORMAT_DUNE24
 	} else if strings.Contains(os.Args[2], "DUNE37S") {
 		println("Probably targeting DUNE37 (CD version)")
 		fileFormat = FILE_FORMAT_DUNE37
+	} else if strings.Contains(os.Args[2], "DUNE38S") {
+		println("Probably targeting DUNE38 (uncommon CD version)")
+		fileFormat = FILE_FORMAT_DUNE38
 	}
 	if fileFormat == FILE_FORMAT_NONE {
 		println("Error: file type / version not recognized from its name")
@@ -718,7 +724,7 @@ func main() {
 		switch fileFormat {
 		case FILE_FORMAT_DUNE21, FILE_FORMAT_DUNE23, FILE_FORMAT_DUNE24:
 			pos0 = pos0 - 39
-		case FILE_FORMAT_DUNE37:
+		case FILE_FORMAT_DUNE37, FILE_FORMAT_DUNE38:
 			pos0 = pos0 - 40
 		}
 		data.compressed[4] = byte(pos0 % 255)

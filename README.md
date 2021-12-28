@@ -40,7 +40,7 @@ The framework uses a callback-based design: any modding program needs to impleme
 Sample invocations:
 
 ```
-for file in DUNE21S0.SAV DUNE23S0.SAV DUNE24S0.SAV DUNE37S0.SAV; do
+for file in DUNE21S0.SAV DUNE23S0.SAV DUNE24S0.SAV DUNE37S0.SAV DUNE38S0.SAV; do
     (path to `go`, /usr/lib/go-1.16/bin/go for me) run odrade.go verbatim.go location.go troop.go npc.go smuggler.go print $file; # just print out the contents of the original save file.
     (path to `go`                                ) run odrade.go ahp20c.go location.go troop.go npc.go smuggler.go modify $file; # apply modder A Harder Path version 20c onto the original save file. 
     (path to `go`                                ) run odrade.go (yourmodder.go) location.go troop.go npc.go smuggler.go modify $file;
