@@ -319,7 +319,7 @@ func performFinalComputationsAndSanityCheck(data *DuneMetadata) bool {
 
 		armySkill := TroopGetArmySkill(data, i)
 		if armySkill > 207 {
-			fmt.Printf("Warning: troop #%d (%X) has excessive army skill, which can cause undesirable effects in battles unless it carries only Atomics\n", i, i)
+			fmt.Printf("Warning: troop #%d (%X) has excessive army skill, which can cause undesirable effects in battles\n", i, i)
 		}
 
 		ecologySkill := TroopGetEcologySkill(data, i)
