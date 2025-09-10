@@ -356,10 +356,7 @@ func performFinalComputationsAndSanityCheck(data *DuneMetadata) bool {
 	for i := uint(LOCATION_MIN_ID); i <= LOCATION_MAX_ID; i++ {
 		//fmt.Printf("Location #%d (%X) (len %d): %x\n", i, i, len(data.housedTroopsInLocations[i]), data.housedTroopsInLocations[i])
 
-		// Complain if there are any locations where there are both Fremen and Harkonnen troops;
-		// TODO All troops at the same location should have the same value for field E, shouldn't they ?
-		// TODO All troops at the same location should have the same coordinates.
-		// TODO Check the index and the list wrt. the position: first troop should be at 1 or 9, second troop at 2 or A, etc.
+		// Complain if there are any locations where there are both Fremen and Harkonnen troops.
 		foundFremenTroops := false
 		foundHarkonnenTroops := false
 		position := 1
@@ -374,10 +371,28 @@ func performFinalComputationsAndSanityCheck(data *DuneMetadata) bool {
 			position++
 		}
 		if foundFremenTroops && foundHarkonnenTroops {
-			fmt.Printf("Location #%d (%X) has a mix of Fremen and Harkonnen troops, that shouldn't happen\n", i, i)
+			fmt.Printf("Error: location #%d (%X) has a mix of Fremen and Harkonnen troops, that shouldn't happen\n", i, i)
 			ret = false;
 		}
 
+		// All troops at the same location should have the same values for field E (AFAWCT) and the same coordinates.
+		// TODO Check the index and the list wrt. the position: first troop should be at 1 or 9, second troop at 2 or A, etc.
+		if len(data.housedTroopsInLocations[i]) > 0 {
+			fieldE1 := TroopGetFieldE(data, uint(data.housedTroopsInLocations[i][0]))
+			coordinates1 := TroopGetCoordinates(data, uint(data.housedTroopsInLocations[i][0]))
+			for j := 1; j < len(data.housedTroopsInLocations[i]); j++ {
+				fieldE2 := TroopGetFieldE(data, uint(data.housedTroopsInLocations[i][j]))
+				if fieldE2 != fieldE1 {
+					fmt.Printf("Error: the troops in location #%d (%X) have different values for field E, that shouldn't happen\n", i, i)
+					ret = false;
+				}
+				coordinates2 := TroopGetCoordinates(data, uint(data.housedTroopsInLocations[i][j]))
+				if bytes.Compare(coordinates1, coordinates2) != 0 {
+					fmt.Printf("Error: the troops in location #%d (%X) have different values for coordinates, that shouldn't happen\n", i, i)
+					ret = false;
+				}
+			}
+		}
 	}
 
 
