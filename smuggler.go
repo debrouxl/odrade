@@ -14,75 +14,75 @@ import (
 )
 
 func SmugglerGetRegion(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+0]
+	return (*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+0]
 }
 
 func SmugglerSetRegion(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+0] = value
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+0] = value
 }
 
 func SmugglerGetWillingnessToHaggle(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+1]
+	return (*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+1]
 }
 
 func SmugglerSetWillingnessToHaggle(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+1] = value
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+1] = value
 }
 
 func SmugglerGetFieldC(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+2]
+	return (*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+2]
 }
 
 func SmugglerSetFieldC(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+2] = value
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+2] = value
 }
 
 func SmugglerGetFieldD(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+3]
+	return (*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+3]
 }
 
 func SmugglerSetFieldD(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+3] = value
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+3] = value
 }
 
 func SmugglerGetHarvesters(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+4]
+	return (*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+4]
 }
 
 func SmugglerSetHarvesters(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+4] = value
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+4] = value
 }
 
 func SmugglerGetOrnithopters(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+5]
+	return (*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+5]
 }
 
 func SmugglerSetOrnithopters(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+5] = value
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+5] = value
 }
 
 func SmugglerGetKrysKnives(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+6]
+	return (*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+6]
 }
 
 func SmugglerSetKrysKnives(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+6] = value
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+6] = value
 }
 
 func SmugglerGetLaserGuns(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+7]
+	return (*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+7]
 }
 
 func SmugglerSetLaserGuns(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+7] = value
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+7] = value
 }
 
 func SmugglerGetWeirdingModules(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+8]
+	return (*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+8]
 }
 
 func SmugglerSetWeirdingModules(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+8] = value
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+8] = value
 }
 
 // TODO
@@ -91,11 +91,11 @@ func SmugglerMapHarvestersPrice(price uint16, write bool) uint16 {
 }
 
 func SmugglerGetHarvestersPrice(data *DuneMetadata, i uint) uint16 {
-	return SmugglerMapHarvestersPrice(uint16((*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+9])*10, false)
+	return SmugglerMapHarvestersPrice(uint16((*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+9])*10, false)
 }
 
 func SmugglerSetHarvestersPrice(data *DuneMetadata, i uint, value uint16) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+9] = byte(SmugglerMapHarvestersPrice(value, true) / 10)
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+9] = byte(SmugglerMapHarvestersPrice(value, true) / 10)
 }
 
 // TODO
@@ -104,11 +104,11 @@ func SmugglerMapOrnithoptersPrice(price uint16, write bool) uint16 {
 }
 
 func SmugglerGetOrnithoptersPrice(data *DuneMetadata, i uint) uint16 {
-	return SmugglerMapOrnithoptersPrice(uint16((*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+10])*10, false)
+	return SmugglerMapOrnithoptersPrice(uint16((*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+10])*10, false)
 }
 
 func SmugglerSetOrnithoptersPrice(data *DuneMetadata, i uint, value uint16) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+10] = byte(SmugglerMapOrnithoptersPrice(value, true) / 10)
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+10] = byte(SmugglerMapOrnithoptersPrice(value, true) / 10)
 }
 
 // TODO
@@ -117,11 +117,11 @@ func SmugglerMapKrysKnivesPrice(price uint16, write bool) uint16 {
 }
 
 func SmugglerGetKrysKnivesPrice(data *DuneMetadata, i uint) uint16 {
-	return SmugglerMapKrysKnivesPrice(uint16((*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+11])*10, false)
+	return SmugglerMapKrysKnivesPrice(uint16((*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+11])*10, false)
 }
 
 func SmugglerSetKrysKnivesPrice(data *DuneMetadata, i uint, value uint16) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+11] = byte(SmugglerMapKrysKnivesPrice(value, true) / 10)
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+11] = byte(SmugglerMapKrysKnivesPrice(value, true) / 10)
 }
 
 // TODO
@@ -130,11 +130,11 @@ func SmugglerMapLaserGunsPrice(price uint16, write bool) uint16 {
 }
 
 func SmugglerGetLaserGunsPrice(data *DuneMetadata, i uint) uint16 {
-	return SmugglerMapLaserGunsPrice(uint16((*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+12])*10, false)
+	return SmugglerMapLaserGunsPrice(uint16((*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+12])*10, false)
 }
 
 func SmugglerSetLaserGunsPrice(data *DuneMetadata, i uint, value uint16) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+12] = byte(SmugglerMapLaserGunsPrice(value, true) / 10)
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+12] = byte(SmugglerMapLaserGunsPrice(value, true) / 10)
 }
 
 // TODO
@@ -143,11 +143,11 @@ func SmugglerMapWeirdingModulesPrice(price uint16, write bool) uint16 {
 }
 
 func SmugglerGetWeirdingModulesPrice(data *DuneMetadata, i uint) uint16 {
-	return SmugglerMapWeirdingModulesPrice(uint16((*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+13])*10, false)
+	return SmugglerMapWeirdingModulesPrice(uint16((*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+13])*10, false)
 }
 
 func SmugglerSetWeirdingModulesPrice(data *DuneMetadata, i uint, value uint16) {
-	(*((*data).current))[(data.smugglersOffset+(i-1)*(SMUGGLER_SIZE+SMUGGLER_PADDING))+13] = byte(SmugglerMapWeirdingModulesPrice(value, true) / 10)
+	(*((*data).current))[(data.smugglersOffset+(i-1)*(data.smugglerSize+data.smugglerPadding))+13] = byte(SmugglerMapWeirdingModulesPrice(value, true) / 10)
 }
 
 func SmugglerSetSpecialDescription(data *DuneMetadata, i uint, description string) {

@@ -73,127 +73,127 @@ func LocationGetNameStr(first byte, second byte) string {
 }
 
 func LocationGetName(data *DuneMetadata, i uint) (byte, byte) {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+0], (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+1]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+0], (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+1]
 }
 
 func LocationGetCoordinates(data *DuneMetadata, i uint) []byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+2 : (data.locationsOffset+(i-1)*LOCATION_SIZE)+8]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+2 : (data.locationsOffset+(i-1)*data.locationSize)+8]
 }
 
 func LocationGetAppearance(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+8]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+8]
 }
 
 func LocationSetAppearance(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+8] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+8] = value
 }
 
 func LocationGetTroopID(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+9]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+9]
 }
 
 func LocationSetTroopID(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+9] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+9] = value
 }
 
 func LocationGetStatus(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+10]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+10]
 }
 
 func LocationSetStatus(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+10] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+10] = value
 }
 
 func LocationGetStage(data *DuneMetadata, i uint) []byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+11 : (data.locationsOffset+(i-1)*LOCATION_SIZE)+16]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+11 : (data.locationsOffset+(i-1)*data.locationSize)+16]
 }
 
 func LocationSetStage(data *DuneMetadata, i uint, stage []byte) {
-	copy((*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+11:(data.locationsOffset+(i-1)*LOCATION_SIZE)+16], stage[0:5])
+	copy((*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+11:(data.locationsOffset+(i-1)*data.locationSize)+16], stage[0:5])
 }
 
 func LocationGetFieldID(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+16]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+16]
 }
 
 func LocationGetSpiceAmount(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+17]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+17]
 }
 
 func LocationSetSpiceAmount(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+17] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+17] = value
 }
 
 func LocationGetSpiceDensity(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+18]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+18]
 }
 
 func LocationSetSpiceDensity(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+18] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+18] = value
 }
 
 func LocationGetFieldJ(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+19]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+19]
 }
 
 func LocationGetHarvesters(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+20]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+20]
 }
 
 func LocationSetHarvesters(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+20] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+20] = value
 }
 
 func LocationGetOrnithopters(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+21]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+21]
 }
 
 func LocationSetOrnithopters(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+21] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+21] = value
 }
 
 func LocationGetKrysKnives(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+22]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+22]
 }
 
 func LocationSetKrysKnives(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+22] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+22] = value
 }
 
 func LocationGetLaserGuns(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+23]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+23]
 }
 
 func LocationSetLaserGuns(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+23] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+23] = value
 }
 
 func LocationGetWeirdingModules(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+24]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+24]
 }
 
 func LocationSetWeirdingModules(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+24] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+24] = value
 }
 
 func LocationGetAtomics(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+25]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+25]
 }
 
 func LocationSetAtomics(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+25] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+25] = value
 }
 
 func LocationGetBulbs(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+26]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+26]
 }
 
 func LocationGetWater(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+27]
+	return (*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+27]
 }
 
 func LocationSetWater(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.locationsOffset+(i-1)*LOCATION_SIZE)+27] = value
+	(*((*data).current))[(data.locationsOffset+(i-1)*data.locationSize)+27] = value
 }
 
 func LocationSetWeapons(data *DuneMetadata, i uint, krysKnives byte, laserGuns byte, weirdingModules byte, atomics byte) {

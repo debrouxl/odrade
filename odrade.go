@@ -25,6 +25,7 @@ const (
 	FILE_FORMAT_DUNE24 = 3
 	FILE_FORMAT_DUNE37 = 4
 	FILE_FORMAT_DUNE38 = 5
+	FILE_FORMAT_DUNE10_AMIGA = 6
 )
 
 const (
@@ -36,7 +37,6 @@ const RLE_BYTE = 0xF7
 
 const LOCATION_MIN_ID = 1
 const LOCATION_MAX_ID = 70
-const LOCATION_SIZE = 28
 
 const LOCATION_NAME1_MIN_ID = 0x1
 const LOCATION_NAME1_MAX_ID = 0xC
@@ -59,7 +59,6 @@ const (
 
 const TROOP_MIN_ID = 1
 const TROOP_MAX_ID = 68
-const TROOP_SIZE = 27
 
 const TROOP_POSITION_TOP_LOCATION_FIRST = 9
 
@@ -92,11 +91,10 @@ const NPC_PADDING = 8
 
 const SMUGGLER_MIN_ID = 1
 const SMUGGLER_MAX_ID = 6
-const SMUGGLER_SIZE = 14
-const SMUGGLER_PADDING = 3
 
 type DuneMetadata struct {
 	format                      uint
+	offsetRLEByte               uint
 	indata                      []byte
 	uncompressed                []byte
 	modified                    []byte
@@ -109,6 +107,10 @@ type DuneMetadata struct {
 	troopsOffset                uint
 	npcsOffset                  uint
 	smugglersOffset             uint
+	locationSize                uint
+	troopSize                   uint
+	smugglerSize                uint
+	smugglerPadding             uint
 	shuffledTroops              map[uint]uint
 	coordinatesMap              map[string]uint
 	specialTroopDescriptions    map[uint]string
@@ -118,13 +120,19 @@ type DuneMetadata struct {
 	housedTroopsInLocations     [][]byte
 	locationForTroops           [TROOP_MAX_ID+1]byte
 	strictChecks                bool
+	endianness                  bool
 }
 
 func performInitialSanityCheck(data *DuneMetadata) bool {
 	// We know how large a valid DUNE??S0.SAV file can be.
 	if !((*data).strictChecks) || (len((*data).indata) > 9500 && len((*data).indata) < 10000) {
-		if ((*data).indata)[2] == RLE_BYTE && ((*data).indata)[len((*data).indata)-1] != RLE_BYTE {
-			var pos0 uint16 = uint16(((*data).indata)[4]) + 255*uint16(((*data).indata)[5])
+		if ((*data).indata)[data.offsetRLEByte] == RLE_BYTE && ((*data).indata)[len((*data).indata)-1] != RLE_BYTE {
+			var pos0 uint16
+			if !data.endianness {
+				pos0 = uint16(((*data).indata)[4]) + 255*uint16(((*data).indata)[5])
+			} else {
+				pos0 = uint16(((*data).indata)[5]) + 255*uint16(((*data).indata)[4])
+			}
 			var expectedPos0 uint16 = uint16(len((*data).indata))
 			switch data.format {
 			case FILE_FORMAT_DUNE21:
@@ -135,6 +143,8 @@ func performInitialSanityCheck(data *DuneMetadata) bool {
 				expectedPos0 = expectedPos0 - 39
 			case FILE_FORMAT_DUNE37, FILE_FORMAT_DUNE38:
 				expectedPos0 = expectedPos0 - 40
+			case FILE_FORMAT_DUNE10_AMIGA:
+				expectedPos0 = expectedPos0 - 40 // FIXME
 			}
 			if !((*data).strictChecks) || pos0 == expectedPos0 {
 				return true
@@ -399,13 +409,17 @@ func performFinalComputationsAndSanityCheck(data *DuneMetadata) bool {
 	return ret
 }
 
-func GetOffsets(mode uint) (uint, uint, uint, uint, uint, uint) {
+func GetOffsetsAndSizes(mode uint) (uint, uint, uint, uint, uint, uint, uint, uint, uint, uint) {
 	var dialoguesOffset uint = 0x3339
 	var timeCountersOffset uint
 	var locationsOffset uint
 	var troopsOffset uint
 	var npcsOffset uint
 	var smugglersOffset uint
+	var locationSize uint = 28
+	var troopSize uint = 27
+	var smugglerSize uint = 14
+	var smugglerPadding uint = 3
 	switch mode {
 	case FILE_FORMAT_DUNE21:
 		timeCountersOffset = 0x43BB
@@ -431,8 +445,17 @@ func GetOffsets(mode uint) (uint, uint, uint, uint, uint, uint) {
 		troopsOffset = 0x4CC9
 		npcsOffset = 0x53F5
 		smugglersOffset = 0x54F7
+	case FILE_FORMAT_DUNE10_AMIGA:
+		dialoguesOffset = 0x3338
+		timeCountersOffset = 0x441E
+		locationsOffset = 0x451E
+		troopsOffset = 0x4CC8
+		npcsOffset = 0x5438
+		smugglersOffset = 0x553A
+		troopSize = 28
+		smugglerPadding = 4
 	}
-	return dialoguesOffset, timeCountersOffset, locationsOffset, troopsOffset, npcsOffset, smugglersOffset
+	return dialoguesOffset, timeCountersOffset, locationsOffset, troopsOffset, npcsOffset, smugglersOffset, locationSize, troopSize, smugglerSize, smugglerPadding
 }
 
 func checkSupportedVersion(data *DuneMetadata) error {
@@ -455,6 +478,8 @@ func checkSupportedVersion(data *DuneMetadata) error {
 		knownvalue = "4f1ba16132e9f9f374954d1084ca89f9dbc78221fa4399ec31493938edc53a004f73f49543fc7c1585124a9d7b090fc6fd93bb5e9093f847dd4a4e809aa9b1b8"
 	case FILE_FORMAT_DUNE38:
 		knownvalue = "b609978c82db021dc701d5a2b3e0ca3dbf2bf4b2d5820344151cd52736c534fa35ca2ef9d7bda0740b7c85798e7fde2ce8a8cb451ccbcc51670d28c5a5b2ce7a"
+	case FILE_FORMAT_DUNE10_AMIGA:
+		knownvalue = "813d8de6c1b071117d6d9d1e9fc57465be047dd91df2846fd89f27ed95fc21932eba0eeb48871fa88a3df6da1605e96e62ce5e0c1262d1cf09267d4735b1ea93"
 	}
 
 	//println(valueStr)
@@ -466,10 +491,10 @@ func checkSupportedVersion(data *DuneMetadata) error {
 	}
 }
 
-func RLEDecompress(indata *[]byte) ([]byte, error) {
+func RLEDecompress(indata *[]byte, offsetRLEByte uint) ([]byte, error) {
 	// Temporarily modify RLE byte value, and expand the array by two dummy bytes so that indata[x+2] falls within array bounds.
 	//println(len(*indata))
-	(*indata)[2] = 0xF6
+	(*indata)[offsetRLEByte] = 0xF6
 	(*indata) = append((*indata), (*indata)[len((*indata))-1]+1)
 	(*indata) = append((*indata), (*indata)[len((*indata))-1]+1)
 
@@ -487,9 +512,9 @@ func RLEDecompress(indata *[]byte) ([]byte, error) {
 		}
 	}
 
-	if len(outdata) < 22000 || len(outdata) >= 22200 {
+	/*if len(outdata) < 22000 || len(outdata) >= 22200 {
 		return outdata, errors.New("Uncompressed data is unexpectedly small or large")
-	}
+	}*/
 
 	return outdata, nil
 }
@@ -573,6 +598,8 @@ func main() {
 	}
 
 	var fileFormat uint = FILE_FORMAT_NONE
+	var offsetRLEByte uint = 2
+	var endianness bool = false
 	if strings.Contains(os.Args[2], "DUNE21S") {
 		println("Probably targeting DUNE21")
 		fileFormat = FILE_FORMAT_DUNE21
@@ -588,6 +615,11 @@ func main() {
 	} else if strings.Contains(os.Args[2], "DUNE38S") {
 		println("Probably targeting DUNE38 (uncommon CD version)")
 		fileFormat = FILE_FORMAT_DUNE38
+	} else if strings.Contains(os.Args[2], "dune10s") {
+		println("Probably targeting dune10 (Amiga version)")
+		fileFormat = FILE_FORMAT_DUNE10_AMIGA
+		offsetRLEByte = 3
+		endianness = true
 	}
 	if fileFormat == FILE_FORMAT_NONE {
 		println("Error: file type / version not recognized from its name")
@@ -597,6 +629,8 @@ func main() {
 	}*/
 
 	data.format = fileFormat
+	data.offsetRLEByte = offsetRLEByte
+	data.endianness = endianness
 	data.strictChecks = true
 
 	// If users want to DoS their computers by feeding a large file into this program... too bad for them ?
@@ -611,7 +645,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	data.uncompressed, err = RLEDecompress(&(data.indata))
+	data.uncompressed, err = RLEDecompress(&(data.indata), offsetRLEByte)
 	if err != nil {
 		println("Error: decompression failed")
 		os.Exit(1)
@@ -624,7 +658,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	data.dialoguesOffset, data.timeCountersOffset, data.locationsOffset, data.troopsOffset, data.npcsOffset, data.smugglersOffset = GetOffsets(data.format)
+	data.dialoguesOffset, data.timeCountersOffset, data.locationsOffset, data.troopsOffset, data.npcsOffset, data.smugglersOffset, data.locationSize, data.troopSize, data.smugglerSize, data.smugglerPadding = GetOffsetsAndSizes(data.format)
 
 	err = checkSupportedVersion(&data)
 	if err != nil {
@@ -741,6 +775,8 @@ func main() {
 			pos0 = pos0 - 39
 		case FILE_FORMAT_DUNE37, FILE_FORMAT_DUNE38:
 			pos0 = pos0 - 40
+		case FILE_FORMAT_DUNE10_AMIGA:
+			pos0 = pos0 - 40 // FIXME
 		}
 		data.compressed[4] = byte(pos0 % 255)
 		data.compressed[5] = byte(pos0 / 255)

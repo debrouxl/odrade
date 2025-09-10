@@ -16,132 +16,132 @@ import (
 )
 
 func TroopGetTroopID(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+0]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+0]
 }
 
 func TroopSetTroopID(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+0] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+0] = value
 }
 
 func TroopGetNextTroopID(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+1]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+1]
 }
 
 func TroopSetNextTroopID(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+1] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+1] = value
 }
 
 func TroopGetPosition(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+2]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+2]
 }
 
 func TroopSetPosition(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+2] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+2] = value
 }
 
 func TroopGetOccupation(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+3]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+3]
 }
 
 func TroopSetOccupation(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+3] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+3] = value
 }
 
 func TroopGetFieldE(data *DuneMetadata, i uint) uint16 {
-	return uint16((*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+4]) | uint16((*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+5])*256
+	return uint16((*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+4]) | uint16((*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+5])*256
 }
 
 func TroopSetFieldE(data *DuneMetadata, i uint, e uint16) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+4] = byte(e)
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+5] = byte(e >> 8)
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+4] = byte(e)
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+5] = byte(e >> 8)
 }
 
 func TroopGetCoordinates(data *DuneMetadata, i uint) []byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+6 : (data.troopsOffset+(i-1)*TROOP_SIZE)+10]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+6 : (data.troopsOffset+(i-1)*data.troopSize)+10]
 }
 
 func TroopSetCoordinates(data *DuneMetadata, i uint, coordinates []byte) {
-	copy((*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+6:(data.troopsOffset+(i-1)*TROOP_SIZE)+10], coordinates[0:4])
+	copy((*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+6:(data.troopsOffset+(i-1)*data.troopSize)+10], coordinates[0:4])
 }
 
 func TroopGetFieldG(data *DuneMetadata, i uint) []byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+10 : (data.troopsOffset+(i-1)*TROOP_SIZE)+18]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+10 : (data.troopsOffset+(i-1)*data.troopSize)+18]
 }
 
 func TroopSetFieldG(data *DuneMetadata, i uint, g []byte) {
-	copy((*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+10:(data.troopsOffset+(i-1)*TROOP_SIZE)+18], g[0:8])
+	copy((*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+10:(data.troopsOffset+(i-1)*data.troopSize)+18], g[0:8])
 }
 
 func TroopGetDissatisfaction(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+18]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+18]
 }
 
 func TroopSetDissatisfaction(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+18] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+18] = value
 }
 
 func TroopGetSpeech(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+19]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+19]
 }
 
 func TroopSetSpeech(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+19] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+19] = value
 }
 
 func TroopGetFieldJ(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+20]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+20]
 }
 
 func TroopSetFieldJ(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+20] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+20] = value
 }
 
 func TroopGetMotivation(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+21]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+21]
 }
 
 func TroopSetMotivation(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+21] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+21] = value
 }
 
 func TroopGetSpiceMiningSkill(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+22]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+22]
 }
 
 func TroopSetSpiceMiningSkill(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+22] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+22] = value
 }
 
 func TroopGetArmySkill(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+23]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+23]
 }
 
 func TroopSetArmySkill(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+23] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+23] = value
 }
 
 func TroopGetEcologySkill(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+24]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+24]
 }
 
 func TroopSetEcologySkill(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+24] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+24] = value
 }
 
 func TroopGetEquipment(data *DuneMetadata, i uint) byte {
-	return (*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+25]
+	return (*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+25]
 }
 
 func TroopSetEquipment(data *DuneMetadata, i uint, value byte) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+25] = value
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+25] = value
 }
 
 func TroopGetPopulation(data *DuneMetadata, i uint) uint16 {
-	return uint16((*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+26]) * 10
+	return uint16((*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+26]) * 10
 }
 
 func TroopSetPopulation(data *DuneMetadata, i uint, value uint16) {
-	(*((*data).current))[(data.troopsOffset+(i-1)*TROOP_SIZE)+26] = byte((value / 10) & 0xFF)
+	(*((*data).current))[(data.troopsOffset+(i-1)*data.troopSize)+26] = byte((value / 10) & 0xFF)
 }
 
 func TroopSetPopulationMotivationArmySkill(data *DuneMetadata, i uint, population uint16, motivation byte, armySkill byte) {
@@ -160,25 +160,25 @@ func TroopSetSpecialDescription(data *DuneMetadata, i uint, description string) 
 }
 
 func TroopSwapPair(data *DuneMetadata, i1 uint, i2 uint) {
-	tmp := make([]byte, TROOP_SIZE)
-	copy(tmp[:], (*((*data).current))[(data.troopsOffset+(i1-1)*TROOP_SIZE):data.troopsOffset+i1*TROOP_SIZE])
-	copy((*((*data).current))[(data.troopsOffset+(i1-1)*TROOP_SIZE):data.troopsOffset+i1*TROOP_SIZE], (*((*data).current))[(data.troopsOffset+(i2-1)*TROOP_SIZE):data.troopsOffset+i2*TROOP_SIZE])
-	copy((*((*data).current))[(data.troopsOffset+(i2-1)*TROOP_SIZE):data.troopsOffset+i2*TROOP_SIZE], tmp[:])
+	tmp := make([]byte, data.troopSize)
+	copy(tmp[:], (*((*data).current))[(data.troopsOffset+(i1-1)*data.troopSize):data.troopsOffset+i1*data.troopSize])
+	copy((*((*data).current))[(data.troopsOffset+(i1-1)*data.troopSize):data.troopsOffset+i1*data.troopSize], (*((*data).current))[(data.troopsOffset+(i2-1)*data.troopSize):data.troopsOffset+i2*data.troopSize])
+	copy((*((*data).current))[(data.troopsOffset+(i2-1)*data.troopSize):data.troopsOffset+i2*data.troopSize], tmp[:])
 	((*data).shuffledTroops)[i1] = i2
 	((*data).shuffledTroops)[i2] = i1
 }
 
 // Move troop i1 to i4, i2 to i5, i3 to i6
 func TroopShuffleTrio(data *DuneMetadata, i1 uint, i2 uint, i3 uint, i4 uint, i5 uint, i6 uint) {
-	tmp1 := make([]byte, TROOP_SIZE)
-	tmp2 := make([]byte, TROOP_SIZE)
-	tmp3 := make([]byte, TROOP_SIZE)
-	copy(tmp1[:], (*((*data).current))[(data.troopsOffset+(i1-1)*TROOP_SIZE):data.troopsOffset+i1*TROOP_SIZE])
-	copy(tmp2[:], (*((*data).current))[(data.troopsOffset+(i2-1)*TROOP_SIZE):data.troopsOffset+i2*TROOP_SIZE])
-	copy(tmp3[:], (*((*data).current))[(data.troopsOffset+(i3-1)*TROOP_SIZE):data.troopsOffset+i3*TROOP_SIZE])
-	copy((*((*data).current))[(data.troopsOffset+(i4-1)*TROOP_SIZE):data.troopsOffset+i4*TROOP_SIZE], tmp1[:])
-	copy((*((*data).current))[(data.troopsOffset+(i5-1)*TROOP_SIZE):data.troopsOffset+i5*TROOP_SIZE], tmp2[:])
-	copy((*((*data).current))[(data.troopsOffset+(i6-1)*TROOP_SIZE):data.troopsOffset+i6*TROOP_SIZE], tmp3[:])
+	tmp1 := make([]byte, data.troopSize)
+	tmp2 := make([]byte, data.troopSize)
+	tmp3 := make([]byte, data.troopSize)
+	copy(tmp1[:], (*((*data).current))[(data.troopsOffset+(i1-1)*data.troopSize):data.troopsOffset+i1*data.troopSize])
+	copy(tmp2[:], (*((*data).current))[(data.troopsOffset+(i2-1)*data.troopSize):data.troopsOffset+i2*data.troopSize])
+	copy(tmp3[:], (*((*data).current))[(data.troopsOffset+(i3-1)*data.troopSize):data.troopsOffset+i3*data.troopSize])
+	copy((*((*data).current))[(data.troopsOffset+(i4-1)*data.troopSize):data.troopsOffset+i4*data.troopSize], tmp1[:])
+	copy((*((*data).current))[(data.troopsOffset+(i5-1)*data.troopSize):data.troopsOffset+i5*data.troopSize], tmp2[:])
+	copy((*((*data).current))[(data.troopsOffset+(i6-1)*data.troopSize):data.troopsOffset+i6*data.troopSize], tmp3[:])
 	((*data).shuffledTroops)[i1] = i4
 	((*data).shuffledTroops)[i2] = i5
 	((*data).shuffledTroops)[i3] = i6
